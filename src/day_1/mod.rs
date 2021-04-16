@@ -1,6 +1,9 @@
 //! Solutions to 2020 day 1 problems
 use std::{fs, path::Path};
 
+/// read the specified file at `file_path` into a `String`
+///
+/// Panic! on error
 pub fn read_file(file_path: &str) -> String {
     let path = Path::new(file_path);
     let display = path.display();
@@ -8,9 +11,12 @@ pub fn read_file(file_path: &str) -> String {
     fs::read_to_string(&path).unwrap_or_else(|why| panic!("couldnt open {}: {}", display, why))
 }
 
+/// summation target value
 const TARGET: i32 = 2020;
 
 /// find the two entries that sum to 2020 and then multiply those two numbers together
+///
+/// nb: does NOT handle bad data. assumes there is a valid answer
 pub fn one(file_path: &str) -> i32 {
     let mut expenses = read_file(file_path)
         .lines()
@@ -46,6 +52,9 @@ pub fn one(file_path: &str) -> i32 {
 }
 
 /// find the three entries that sum to 2020 and then multiply those three numbers together
+///
+/// nb: does NOT handle bad data. assumes there is a valid answer; expect an infinite loop
+/// otherwise
 pub fn two(file_path: &str) -> i32 {
     let mut expenses = read_file(file_path)
         .lines()
