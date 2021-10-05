@@ -53,6 +53,21 @@ impl From<(u32, u32, &str)> for Policy {
     }
 }
 
+#[derive(Debug, PartialEq)]
+struct Password(String);
+
+impl Password {
+    /// return a new Password instance if the supplied password meets the Policy
+    pub fn new(policy: &Policy, password: &str) -> Option<Self> {
+        let count = password.matches(policy.letter).count();
+        if count >= policy.min as usize && count <= policy.max as usize {
+            return Some(Password(String::from(password)));
+        }
+
+        None
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -66,6 +81,33 @@ mod test {
             letter: 'a',
         });
         let actual = Policy::new("1-3 a");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn new_password() {
+        let msg = "should create a Password";
+        let expected = Some(Password(String::from("abcde")));
+        let actual = Password::new(
+            &Policy {
+                min: 1,
+                max: 3,
+                letter: 'a',
+            },
+            "abcde",
+        );
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should fail to create a Password";
+        let expected = None;
+        let actual = Password::new(
+            &Policy {
+                min: 1,
+                max: 3,
+                letter: 'b',
+            },
+            "cdefg",
+        );
         assert_eq!(actual, expected, "{}", msg);
     }
 }
