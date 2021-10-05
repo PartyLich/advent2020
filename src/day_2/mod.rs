@@ -2,6 +2,7 @@
 //!
 //! Option and `unwrap()` used for simplicity. `Result`s and error handling would obviously be more
 //! robust
+use lazy_static::lazy_static;
 use regex::Regex;
 
 use crate::day_1::read_file;
@@ -18,9 +19,12 @@ struct Policy {
 impl Policy {
     /// attempt to parse a [`Policy`] from the provided string
     pub fn new(policy_string: &str) -> Option<Self> {
-        let policy_re: Regex = Regex::new(r#"(?P<min>\d*)-(?P<max>\d*)\s(?P<letter>\w)"#).unwrap();
+        lazy_static! {
+            static ref POLICY_RE: Regex =
+                Regex::new(r#"(?P<min>\d*)-(?P<max>\d*)\s(?P<letter>\w)"#).unwrap();
+        }
 
-        policy_re
+        POLICY_RE
             .captures(policy_string)
             .and_then(|captures| {
                 // try to get named groups
