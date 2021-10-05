@@ -4,6 +4,8 @@
 //! robust
 use regex::Regex;
 
+use crate::day_1::read_file;
+
 /// password policy indicates the lowest and highest number of times a given letter must appear for
 /// the password to be valid.
 #[derive(Debug, PartialEq)]
@@ -68,6 +70,22 @@ impl Password {
     }
 }
 
+/// Read a list of policy: password combinations and return how many passwords are valid according
+/// to their policies
+///
+/// nb: does NOT handle bad data.
+pub fn one(file_path: &str) -> usize {
+    read_file(file_path)
+        .lines()
+        .filter_map(|line| {
+            // split policy and password. panic on bad data
+            let (policy, password) = line.split_once(':').expect("Unable to find delimiter ':'");
+            let policy = Policy::new(policy).expect("Unable to parse valid Policy");
+            Password::new(&policy, password)
+        })
+        .count()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -108,6 +126,14 @@ mod test {
             },
             "cdefg",
         );
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_one() {
+        let msg = "should return 2";
+        let expected = 2;
+        let actual = one("./input/2-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
