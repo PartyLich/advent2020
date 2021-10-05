@@ -13,6 +13,12 @@ trait PasswordPolicy {
     fn is_valid(&self, password: &str) -> bool;
 }
 
+/// returns the first [`char`] (unicode scalar value, not grapheme cluster) in the provided [`str`]
+/// will panic on an empty str
+fn first_char(ch: &str) -> char {
+    ch.as_bytes()[0].into()
+}
+
 /// password policy indicates the lowest and highest number of times a given letter must appear for
 /// the password to be valid.
 #[derive(Debug, PartialEq)]
@@ -60,7 +66,7 @@ impl From<(u32, u32, &str)> for Policy {
         Self {
             min: other.0,
             max: other.1,
-            letter: other.2.as_bytes()[0].into(),
+            letter: first_char(other.2),
         }
     }
 }
@@ -132,9 +138,8 @@ impl From<Policy> for PolicyTwo {
 
 impl PasswordPolicy for PolicyTwo {
     fn is_valid(&self, password: &str) -> bool {
-        let head = |ch: &str| ch.chars().take(1).collect::<Vec<char>>()[0];
-        let first = password.get(self.first..=self.first).map(head);
-        let second = password.get(self.second..=self.second).map(head);
+        let first = password.get(self.first..=self.first).map(first_char);
+        let second = password.get(self.second..=self.second).map(first_char);
 
         (first == Some(self.letter)) ^ (second == Some(self.letter))
     }
