@@ -130,6 +130,32 @@ impl From<Policy> for PolicyTwo {
     }
 }
 
+impl PasswordPolicy for PolicyTwo {
+    fn is_valid(&self, password: &str) -> bool {
+        let head = |ch: &str| ch.chars().take(1).collect::<Vec<char>>()[0];
+        let first = password.get(self.first..=self.first).map(head);
+        let second = password.get(self.second..=self.second).map(head);
+
+        (first == Some(self.letter)) ^ (second == Some(self.letter))
+    }
+}
+
+/// Read a list of policy: password combinations and return how many passwords are valid according
+/// to their policies
+///
+/// nb: does NOT handle bad data.
+pub fn two(file_path: &str) -> usize {
+    read_file(file_path)
+        .lines()
+        .filter_map(|line| {
+            // split policy and password. panic on bad data
+            let (policy, password) = line.split_once(':').expect("Unable to find delimiter ':'");
+            let policy = PolicyTwo::new(policy).expect("Unable to parse valid PolicyTwo");
+            Password::new(&policy, password.trim())
+        })
+        .count()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -190,6 +216,14 @@ mod test {
             letter: 'a',
         });
         let actual = PolicyTwo::new("1-3 a");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should return 1";
+        let expected = 1;
+        let actual = two("./input/2-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
