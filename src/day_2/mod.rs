@@ -7,6 +7,12 @@ use regex::Regex;
 
 use crate::day_1::read_file;
 
+/// Password policy interface. Provides behavior to validate compliance with this policy
+trait PasswordPolicy {
+    /// Returns true if the supplied password complies with this policy
+    fn is_valid(&self, password: &str) -> bool;
+}
+
 /// password policy indicates the lowest and highest number of times a given letter must appear for
 /// the password to be valid.
 #[derive(Debug, PartialEq)]
@@ -59,14 +65,20 @@ impl From<(u32, u32, &str)> for Policy {
     }
 }
 
+impl PasswordPolicy for Policy {
+    fn is_valid(&self, password: &str) -> bool {
+        let count = password.matches(self.letter).count();
+        count >= self.min as usize && count <= self.max as usize
+    }
+}
+
 #[derive(Debug, PartialEq)]
 struct Password(String);
 
 impl Password {
     /// return a new Password instance if the supplied password meets the Policy
-    pub fn new(policy: &Policy, password: &str) -> Option<Self> {
-        let count = password.matches(policy.letter).count();
-        if count >= policy.min as usize && count <= policy.max as usize {
+    pub fn new(policy: &impl PasswordPolicy, password: &str) -> Option<Self> {
+        if policy.is_valid(password) {
             return Some(Password(String::from(password)));
         }
 
