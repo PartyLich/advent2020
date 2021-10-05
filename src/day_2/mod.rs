@@ -102,6 +102,34 @@ pub fn one(file_path: &str) -> usize {
         .count()
 }
 
+/// Each policy describes two positions in the password, `first` and `second`
+/// Exactly one of these positions must contain the given letter.
+/// Other occurrences of the letter are irrelevant for the purposes of policy enforcement.
+#[derive(Debug, PartialEq)]
+struct PolicyTwo {
+    pub first: usize,
+    pub second: usize,
+    pub letter: char,
+}
+
+impl PolicyTwo {
+    /// attempt to parse a [`PolicyTwo`] from the provided string
+    pub fn new(policy_string: &str) -> Option<Self> {
+        Policy::new(policy_string).map(From::from)
+    }
+}
+
+impl From<Policy> for PolicyTwo {
+    fn from(policy: Policy) -> Self {
+        // Serialized policies are indexed with the first element as 1
+        Self {
+            first: policy.min as usize - 1,
+            second: policy.max as usize - 1,
+            letter: policy.letter,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -150,6 +178,18 @@ mod test {
         let msg = "should return 2";
         let expected = 2;
         let actual = one("./input/2-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn new_policy_two() {
+        let msg = "should create a PolicyTwo";
+        let expected = Some(PolicyTwo {
+            first: 0,
+            second: 2,
+            letter: 'a',
+        });
+        let actual = PolicyTwo::new("1-3 a");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
