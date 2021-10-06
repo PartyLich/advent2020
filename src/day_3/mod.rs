@@ -73,6 +73,13 @@ fn count_trees(map: &Map, slope: Slope) -> usize {
     count
 }
 
+/// counts all the trees you would encounter for the slope (right 3, down 1) while traversing the
+/// supplied terrain starting from the top left (0, 0) corner
+pub fn one(file_path: &str) -> usize {
+    let map = load_terrain(file_path);
+    count_trees(&map, Slope::new(3, 1))
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -105,6 +112,14 @@ mod test {
 
         let expected = 1;
         let actual = count_trees(&map, Slope::new(4, 1));
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_one() {
+        let msg = "should count the number of trees for slope (3, 1)";
+        let expected = 7;
+        let actual = one("input/3-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
