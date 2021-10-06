@@ -23,4 +23,5 @@ fn main() {
         day_2::two("./input/2-1.txt")
     );
     show!("3-1", "Trees encountered", day_3::one);
+    show!("3-1", "Trees encountered product", day_3::two);
 }

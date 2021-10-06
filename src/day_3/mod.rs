@@ -80,6 +80,27 @@ pub fn one(file_path: &str) -> usize {
     count_trees(&map, Slope::new(3, 1))
 }
 
+/// counts all the trees you would encounter for the slopes
+/// - Right 1, down 1.
+/// - Right 3, down 1.
+/// - Right 5, down 1.
+/// - Right 7, down 1.
+/// - Right 1, down 2.
+pub fn two(file_path: &str) -> usize {
+    let map = load_terrain(file_path);
+    let slopes = [
+        Slope::new(1, 1),
+        Slope::new(3, 1),
+        Slope::new(5, 1),
+        Slope::new(7, 1),
+        Slope::new(1, 2),
+    ];
+    slopes
+        .iter()
+        .map(|slope| count_trees(&map, *slope))
+        .fold(1, |acc, count| acc * count)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -120,6 +141,14 @@ mod test {
         let msg = "should count the number of trees for slope (3, 1)";
         let expected = 7;
         let actual = one("input/3-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should count the number of trees for a list of slopes and multiply the results";
+        let expected = 336;
+        let actual = two("input/3-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
