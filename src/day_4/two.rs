@@ -97,7 +97,10 @@ impl ExpirationYear {
 }
 
 #[derive(Debug, PartialEq)]
-struct Height();
+enum Height {
+    In(usize),
+    Cm(usize),
+}
 impl Height {
     pub fn new(value: &str) -> Option<Self> {
         lazy_static! {
@@ -117,7 +120,7 @@ impl Height {
                     if height < 59 || height > 76 {
                         None
                     } else {
-                        Some(Self())
+                        Some(Self::In(height))
                     }
                 }
                 "cm" => {
@@ -125,7 +128,7 @@ impl Height {
                     if height < 150 || height > 193 {
                         None
                     } else {
-                        Some(Self())
+                        Some(Self::Cm(height))
                     }
                 }
                 _ => None,
@@ -218,9 +221,10 @@ mod test {
     #[test]
     fn hgt() {
         let msg = "should create a Height";
-        let expected = Some(Height());
+        let expected = Some(Height::In(60));
         let actual = Height::new("60in");
         assert_eq!(actual, expected, "{}", msg);
+        let expected = Some(Height::Cm(190));
         let actual = Height::new("190cm");
         assert_eq!(actual, expected, "{}", msg);
 
