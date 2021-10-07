@@ -19,4 +19,5 @@ fn main() {
     show!("3-1", "Trees encountered", "3-1", day_3::one);
     show!("3-2", "Trees encountered product", "3-1", day_3::two);
     show!("4-1", "Valid passports", "4-1", day_4::one);
+    show!("4-2", "Valid passports", "4-1", day_4::two);
 }

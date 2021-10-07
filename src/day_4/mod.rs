@@ -5,6 +5,9 @@ use std::convert::TryFrom;
 
 use crate::day_1::read_file;
 
+pub use two::two;
+mod two;
+
 /// a key value pair
 type KeyValue<'a> = (&'a str, &'a str);
 
