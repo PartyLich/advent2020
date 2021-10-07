@@ -9,7 +9,17 @@ pub use two::two;
 mod two;
 
 /// a key value pair
-type KeyValue<'a> = (&'a str, &'a str);
+struct KeyValue<'a>(&'a str, &'a str);
+
+impl<'a> TryFrom<&'a str> for KeyValue<'a> {
+    type Error = &'static str;
+
+    fn try_from(pair: &'a str) -> Result<Self, Self::Error> {
+        pair.split_once(':')
+            .ok_or("Unable to find delimiter ':'")
+            .map(|(f, b)| KeyValue(f, b))
+    }
+}
 
 /// Passport data
 #[derive(Debug, PartialEq)]
@@ -23,7 +33,7 @@ impl TryFrom<Vec<KeyValue<'_>>> for Passport {
             return Err("Too many absent fields");
         }
         let mut map = HashMap::new();
-        for (key, value) in &list {
+        for KeyValue(key, value) in &list {
             map.insert(key.to_string(), value.to_string());
         }
 
@@ -44,7 +54,7 @@ fn read_passports(file_path: &str) -> Vec<Result<Passport, &'static str>> {
         .map(|passport_str| {
             passport_str
                 .split_whitespace()
-                .map(|pair| pair.split_once(":").expect("Unable to find delimiter ':'"))
+                .map(|pair| KeyValue::try_from(pair).unwrap())
                 .collect::<Vec<_>>()
         })
         .map(TryFrom::try_from)

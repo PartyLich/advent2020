@@ -3,7 +3,7 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use super::{read_file, HashMap, KeyValue, Passport};
+use super::{read_file, HashMap, KeyValue, Passport, TryFrom};
 
 /// Vec<KeyValue> to Result<Passport> conversion with part two rules
 ///
@@ -14,7 +14,7 @@ fn try_from(list: Vec<KeyValue<'_>>) -> Result<Passport, &'static str> {
         return Err("Too many absent fields");
     }
     let mut map = HashMap::new();
-    for (key, value) in &list {
+    for KeyValue(key, value) in &list {
         match *key {
             "byr" => {
                 if BirthYear::new(value).is_none() {
@@ -202,7 +202,7 @@ pub fn two(file_path: &str) -> usize {
         .map(|passport_str| {
             passport_str
                 .split_whitespace()
-                .map(|pair| pair.split_once(":").expect("Unable to find delimiter ':'"))
+                .map(|pair| KeyValue::try_from(pair).unwrap())
                 .collect::<Vec<_>>()
         })
         .map(try_from)
