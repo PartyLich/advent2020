@@ -17,48 +17,36 @@ fn try_from(list: Vec<KeyValue<'_>>) -> Result<Passport, &'static str> {
     for KeyValue(key, value) in &list {
         match *key {
             "byr" => {
-                if BirthYear::new(value).is_none() {
-                    return Err("Invalid field encountered");
-                }
+                BirthYear::new(value).ok_or("Invalid byr field encountered")?;
             }
             "iyr" => {
-                if IssueYear::new(value).is_none() {
-                    return Err("Invalid field encountered");
-                }
+                IssueYear::new(value).ok_or("Invalid iyr field encountered")?;
             }
             "eyr" => {
-                if ExpirationYear::new(value).is_none() {
-                    return Err("Invalid field encountered");
-                }
+                ExpirationYear::new(value).ok_or("Invalid eyr field encountered")?;
             }
             "hgt" => {
-                if Height::new(value).is_none() {
-                    return Err("Invalid field encountered");
-                }
+                Height::new(value).ok_or("Invalid hgt field encountered")?;
             }
             "hcl" => {
-                if HairColor::new(value).is_none() {
-                    return Err("Invalid field encountered");
-                }
+                HairColor::new(value).ok_or("Invalid hcl field encountered")?;
             }
             "ecl" => {
-                if EyeColor::new(value).is_none() {
-                    return Err("Invalid field encountered");
-                }
+                EyeColor::new(value).ok_or("Invalid ecl field encountered")?;
             }
             "pid" => {
-                if PassportID::new(value).is_none() {
-                    return Err("Invalid field encountered");
+                PassportID::new(value).ok_or("Invalid pid field encountered")?;
+            }
+            "cid" => {
+                if list.len() == 7 {
+                    return Err("Too many absent fields");
                 }
             }
-            "cid" => {}
-            _ => {}
+            _ => {
+                // ignoring bad data. yuck
+            }
         }
         map.insert(key.to_string(), value.to_string());
-    }
-
-    if map.len() == 7 && map.get("cid").is_some() {
-        return Err("Too many absent fields");
     }
 
     Ok(Passport(map))
