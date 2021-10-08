@@ -77,6 +77,11 @@ pub fn one(file_path: &str) -> usize {
         .sum()
 }
 
+/// count questions where everyone answered yes in each group, then sum the counts
+pub fn two(file_path: &str) -> usize {
+    todo!();
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -105,6 +110,14 @@ mod test {
         let msg = "should sum the unique yes answers for each group";
         let expected = 11;
         let actual = one("input/6-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should sum the yes answers for each group";
+        let expected = 6;
+        let actual = two("input/6-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
