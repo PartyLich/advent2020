@@ -4,6 +4,8 @@ use std::convert::TryInto;
 use std::ops::BitOr;
 use std::str::FromStr;
 
+use crate::day_1::read_file;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 struct AnswerFlags(u32);
 
@@ -56,8 +58,23 @@ impl BitOr for AnswerFlags {
     }
 }
 
+/// count unique answers in each group, then sum the counts
 pub fn one(file_path: &str) -> usize {
-    todo!();
+    read_file(file_path)
+        // double newline between entries
+        .split("\n\n")
+        // parse answers for group members
+        .map(|answer_group| {
+            answer_group
+                .lines()
+                .map(|answers| answers.parse::<AnswerFlags>())
+                .collect::<Result<Vec<_>, _>>()
+        })
+        // combine answers for each group
+        .map(|group| group.unwrap().drain(..).fold(AnswerFlags(0), |a, b| a | b))
+        // count unique answers
+        .map(|flags| flags.len())
+        .sum()
 }
 
 #[cfg(test)]
