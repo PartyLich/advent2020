@@ -95,6 +95,30 @@ pub fn one(file_path: &str) -> usize {
         .unwrap()
 }
 
+/// Return the missing seat ID in a list of serialized [`BoardingPass`]es
+pub fn two(file_path: &str) -> usize {
+    let mut r = read_file(file_path)
+        .lines()
+        .map(|pass_str| {
+            pass_str
+                .parse::<BoardingPass>()
+                .expect("Boarding pass parse failure")
+                .seat_id()
+        })
+        .collect::<Vec<_>>();
+    r.sort_unstable();
+
+    // find the first missing number in a sorted list of integers
+    for (index, id) in r.iter().skip(1).enumerate() {
+        if id - r[index] > 1 {
+            return id - 1;
+        }
+    }
+
+    // really should return an Err or None if we didn't find a missing value
+    0
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

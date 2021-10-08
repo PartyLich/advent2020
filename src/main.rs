@@ -21,4 +21,5 @@ fn main() {
     show!("4-1", "Valid passports", "4-1", day_4::one);
     show!("4-2", "Valid passports", "4-1", day_4::two);
     show!("5-1", "Highest seat ID", "5-1", day_5::one);
+    show!("5-2", "Missing seat ID", "5-1", day_5::two);
 }
