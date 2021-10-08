@@ -1,6 +1,13 @@
 //! Solutions to 2020 day 5 problems
 //! --- Day 5: Binary Boarding ---
 use std::convert::TryFrom;
+use std::str::FromStr;
+
+/// Total seating rows in the aircraft
+const ROWS: u8 = 128;
+
+/// Total seating columns in the aircraft
+const COLS: u8 = 8;
 
 /// Binary space partitioning instruction
 #[derive(Debug, Clone, Copy)]
@@ -18,6 +25,57 @@ impl TryFrom<char> for Half {
             'B' | 'R' => Ok(Self::Upper),
             _ => Err(format!("Invalid character encountered: {}", value)),
         }
+    }
+}
+
+/// return resulting index pair from processing a [binary space partitioning instruction](Half)
+/// with the provided min and max index
+fn partition(pair: (u8, u8), value: &Half) -> (u8, u8) {
+    let (start, end) = pair;
+    let mid = (start + end) / 2;
+    match value {
+        Half::Lower => (start, mid),
+        Half::Upper => (mid + 1, end),
+    }
+}
+
+/// North Pole airline flight boarding pass
+#[derive(Debug, Clone, Copy)]
+struct BoardingPass {
+    /// exactly one of the 128 rows on the plane (numbered 0 through 127)
+    row: u8,
+    /// exactly one of the 8 columns of seats on the plane (numbered 0 through 7).
+    col: u8,
+}
+
+impl BoardingPass {
+    pub fn seat_id(&self) -> usize {
+        (self.row as usize * 8 + self.col as usize).into()
+    }
+}
+
+impl FromStr for BoardingPass {
+    type Err = String;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        if value.len() != 10 {
+            return Err(format!(
+                "Unable to parse BoardingPass. Expected length 10, actual {}",
+                value.len()
+            ));
+        }
+
+        // parse partitioning intructions
+        let instructions: Vec<Half> = value
+            .chars()
+            .map(|val| Half::try_from(val))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let (row_instructions, col_instructions) = instructions.split_at(7);
+        let (row, _) = row_instructions.iter().fold((0, ROWS - 1), partition);
+        let (col, _) = col_instructions.iter().fold((0, COLS - 1), partition);
+
+        Ok(Self { row, col })
     }
 }
 
