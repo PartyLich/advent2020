@@ -3,6 +3,8 @@
 use std::convert::TryFrom;
 use std::str::FromStr;
 
+use crate::day_1::read_file;
+
 /// Total seating rows in the aircraft
 const ROWS: u8 = 128;
 
@@ -77,6 +79,20 @@ impl FromStr for BoardingPass {
 
         Ok(Self { row, col })
     }
+}
+
+/// Return highest seat ID in a list of serialized [`BoardingPass`]es
+pub fn one(file_path: &str) -> usize {
+    read_file(file_path)
+        .lines()
+        .map(|pass_str| {
+            pass_str
+                .parse::<BoardingPass>()
+                .expect("Boarding pass parse failure")
+        })
+        .max_by_key(|pass| pass.seat_id())
+        .map(|pass| pass.seat_id())
+        .unwrap()
 }
 
 #[cfg(test)]
