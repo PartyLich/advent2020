@@ -1,5 +1,25 @@
 //! Solutions to 2020 day 5 problems
 //! --- Day 5: Binary Boarding ---
+use std::convert::TryFrom;
+
+/// Binary space partitioning instruction
+#[derive(Debug, Clone, Copy)]
+enum Half {
+    Upper,
+    Lower,
+}
+
+impl TryFrom<char> for Half {
+    type Error = String;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            'F' | 'L' => Ok(Self::Lower),
+            'B' | 'R' => Ok(Self::Upper),
+            _ => Err(format!("Invalid character encountered: {}", value)),
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
