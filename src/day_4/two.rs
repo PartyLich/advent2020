@@ -185,6 +185,7 @@ impl PassportID {
 #[derive(Debug, PartialEq)]
 struct CountryID();
 
+/// Count the number of valid passports with cid field optional
 pub fn two(file_path: &str) -> usize {
     read_file(file_path)
         // double newline between passport entries

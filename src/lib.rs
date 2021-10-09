@@ -1,3 +1,6 @@
+#![deny(missing_debug_implementations)]
+#![deny(missing_docs)]
+//! Advent of Code 2020 Solutions
 pub mod day_1;
 pub mod day_2;
 pub mod day_3;

@@ -61,8 +61,8 @@ fn read_passports(file_path: &str) -> Vec<Result<Passport, &'static str>> {
         .collect()
 }
 
-// Count the number of valid passports - those that have all required fields.
-// Treat cid as optional.
+/// Count the number of valid passports - those that have all required fields.
+/// Treat cid as optional.
 pub fn one(file_path: &str) -> usize {
     read_passports(file_path)
         .drain(..)
