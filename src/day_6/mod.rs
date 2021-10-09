@@ -66,27 +66,21 @@ impl BitAnd for AnswerFlags {
     }
 }
 
-/// count unique answers in each group, then sum the counts
-pub fn one(file_path: &str) -> usize {
-    read_file(file_path)
-        // double newline between entries
-        .split("\n\n")
-        // parse answers for group members
-        .map(|answer_group| {
-            answer_group
-                .lines()
-                .map(|answers| answers.parse::<AnswerFlags>())
-                .collect::<Result<Vec<_>, _>>()
-        })
-        // combine answers for each group
-        .map(|group| group.unwrap().drain(..).fold(AnswerFlags(0), |a, b| a | b))
-        // count unique answers
-        .map(|flags| flags.len())
-        .sum()
+/// combine [`AnswerFlags`] returning flags that are active in either argument
+fn any(a: AnswerFlags, b: AnswerFlags) -> AnswerFlags {
+    a | b
 }
 
-/// count questions where everyone answered yes in each group, then sum the counts
-pub fn two(file_path: &str) -> usize {
+/// combine [`AnswerFlags`] returning flags that are active in both argument
+fn all(a: AnswerFlags, b: AnswerFlags) -> AnswerFlags {
+    a & b
+}
+
+fn count_answers<F>(mut combinator: F, file_path: &str) -> usize
+where
+    F: FnOnce(AnswerFlags, AnswerFlags) -> AnswerFlags
+        + FnMut(AnswerFlags, AnswerFlags) -> AnswerFlags,
+{
     read_file(file_path)
         // double newline between entries
         .split("\n\n")
@@ -102,11 +96,22 @@ pub fn two(file_path: &str) -> usize {
             group
                 .unwrap()
                 .drain(..)
-                .fold(AnswerFlags(u32::MAX), |a, b| a & b)
+                .reduce(|a, b| combinator(a, b))
+                .expect("Received an empty list")
         })
-        // count answers
+        // count unique answers
         .map(|flags| flags.len())
         .sum()
+}
+
+/// count unique answers in each group, then sum the counts
+pub fn one(file_path: &str) -> usize {
+    count_answers(any, file_path)
+}
+
+/// count questions where everyone answered yes in each group, then sum the counts
+pub fn two(file_path: &str) -> usize {
+    count_answers(all, file_path)
 }
 
 #[cfg(test)]
