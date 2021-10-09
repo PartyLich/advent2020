@@ -1,7 +1,7 @@
 //! Solutions to 2020 day 6
 //! --- Day 6: Custom Customs ---
 use std::convert::TryInto;
-use std::ops::BitOr;
+use std::ops::{BitAnd, BitOr};
 use std::str::FromStr;
 
 use crate::day_1::read_file;
@@ -58,6 +58,14 @@ impl BitOr for AnswerFlags {
     }
 }
 
+impl BitAnd for AnswerFlags {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(self.0 & rhs.0)
+    }
+}
+
 /// count unique answers in each group, then sum the counts
 pub fn one(file_path: &str) -> usize {
     read_file(file_path)
@@ -79,7 +87,26 @@ pub fn one(file_path: &str) -> usize {
 
 /// count questions where everyone answered yes in each group, then sum the counts
 pub fn two(file_path: &str) -> usize {
-    todo!();
+    read_file(file_path)
+        // double newline between entries
+        .split("\n\n")
+        // parse answers for group members
+        .map(|answer_group| {
+            answer_group
+                .lines()
+                .map(|answers| answers.parse::<AnswerFlags>())
+                .collect::<Result<Vec<_>, _>>()
+        })
+        // combine answers for each group
+        .map(|group| {
+            group
+                .unwrap()
+                .drain(..)
+                .fold(AnswerFlags(u32::MAX), |a, b| a & b)
+        })
+        // count answers
+        .map(|flags| flags.len())
+        .sum()
 }
 
 #[cfg(test)]
