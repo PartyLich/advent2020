@@ -52,7 +52,7 @@ struct BoardingPass {
 
 impl BoardingPass {
     pub fn seat_id(&self) -> usize {
-        (self.row as usize * 8 + self.col as usize).into()
+        self.row as usize * 8 + self.col as usize
     }
 }
 
@@ -70,7 +70,7 @@ impl FromStr for BoardingPass {
         // parse partitioning intructions
         let instructions: Vec<Half> = value
             .chars()
-            .map(|val| Half::try_from(val))
+            .map(Half::try_from)
             .collect::<Result<Vec<_>, _>>()?;
 
         let (row_instructions, col_instructions) = instructions.split_at(7);

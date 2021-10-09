@@ -39,7 +39,7 @@ impl Slope {
     pub fn new(x: usize, y: usize) -> Self {
         // reduce very naively. fine for the specs in the problem, but still deserves better
         if x > 0 && y % x == 0 {
-            return Self(x / x, y / x);
+            return Self(1, y / x);
         }
         Self(x, y)
     }
@@ -47,7 +47,7 @@ impl Slope {
 
 /// Count the number of [`Tree`](Terrain::Tree) squares encountered on this map by following the
 /// provided slope, starting from the top left (0, 0) square
-fn count_trees(map: &Map, slope: Slope) -> usize {
+fn count_trees(map: &[Vec<Terrain>], slope: Slope) -> usize {
     if slope.1 < 1 {
         panic!(
             "Supplied slope {:?} cannot take you down the mountain",
@@ -98,7 +98,7 @@ pub fn two(file_path: &str) -> usize {
     slopes
         .iter()
         .map(|slope| count_trees(&map, *slope))
-        .fold(1, |acc, count| acc * count)
+        .product()
 }
 
 #[cfg(test)]

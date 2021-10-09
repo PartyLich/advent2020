@@ -23,7 +23,7 @@ pub fn one(file_path: &str) -> i32 {
         .map(|line| line.parse::<i32>().unwrap())
         .collect::<Vec<_>>();
     // TODO: avoid this sort overhead with a less-bad algo
-    expenses.sort();
+    expenses.sort_unstable();
 
     let mut s = 0;
     let mut e = expenses.len() - 1;
@@ -61,7 +61,7 @@ pub fn two(file_path: &str) -> i32 {
         .map(|line| line.parse::<i32>().unwrap())
         .collect::<Vec<_>>();
     // TODO: avoid this sort overhead with a less-bad algo
-    expenses.sort();
+    expenses.sort_unstable();
 
     let mut ind = (0, 1, expenses.len() - 1);
     loop {

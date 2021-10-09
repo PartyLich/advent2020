@@ -117,7 +117,7 @@ impl Height {
             .and_then(|(height, unit)| match unit {
                 "in" => {
                     let height = height.parse::<usize>().ok()?;
-                    if height < 59 || height > 76 {
+                    if !(59..=76).contains(&height) {
                         None
                     } else {
                         Some(Self::In(height))
@@ -125,7 +125,7 @@ impl Height {
                 }
                 "cm" => {
                     let height = height.parse::<usize>().ok()?;
-                    if height < 150 || height > 193 {
+                    if !(150..=193).contains(&height) {
                         None
                     } else {
                         Some(Self::Cm(height))
