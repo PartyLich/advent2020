@@ -1,5 +1,6 @@
 //! Solutions to 2020 day 8
 //! --- Day 8: Handheld Halting ---
+use std::collections::HashSet;
 use std::str::FromStr;
 
 use crate::day_1::read_file;
@@ -56,9 +57,111 @@ fn read_program(file_path: &str) -> Program {
         .collect()
 }
 
-/// return the accumulator value before looping
-pub fn one(file_path: &str) -> usize {
-    todo!()
+/// the state (registers?) of a simple computer system
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
+struct State {
+    /// program counter
+    pc: usize,
+    /// accumulator
+    acc: isize,
+}
+
+/// a simple computer
+#[derive(Debug, Default, PartialEq)]
+struct Computer {
+    state: State,
+    /// a [Program] held in memory
+    program: Program,
+    /// previously visited memory locations
+    visited: HashSet<usize>,
+    /// flag set if program execution causes a halt
+    halted: bool,
+}
+
+impl Computer {
+    /// Create an instance with the supplied program in memory
+    pub fn with_program(program: Program) -> Self {
+        Self {
+            program,
+            ..Default::default()
+        }
+    }
+
+    // halt any further instruction execution
+    fn halt(&mut self) {
+        self.halted = true;
+    }
+
+    /// Execute the next instruction and return a copy of the next system state
+    pub fn step(&mut self) -> Option<State> {
+        if self.program.is_empty() || self.halted {
+            return None;
+        }
+
+        // update instruction visit list
+        self.visited.insert(self.state.pc);
+        // unsafe indexing. if it fails, its the other programmers fault, right?
+        let instruction = self.program[self.state.pc];
+        match instruction {
+            Instruction::Acc(argument) => {
+                let pc = self.state.pc + 1;
+                if self.visited.contains(&pc) {
+                    self.halt();
+                    return None;
+                }
+
+                self.state = State {
+                    pc,
+                    acc: self.state.acc + argument,
+                }
+            }
+            Instruction::Jmp(argument) => {
+                // sketchy typecasting
+                let pc = (self.state.pc as isize + argument) as usize;
+                if self.visited.contains(&pc) {
+                    self.halt();
+                    return None;
+                }
+
+                self.state = State { pc, ..self.state }
+            }
+            Instruction::Nop() => {
+                let pc = self.state.pc + 1;
+                if self.visited.contains(&pc) {
+                    self.halt();
+                    return None;
+                }
+
+                self.state = State {
+                    pc: self.state.pc + 1,
+                    ..self.state
+                }
+            }
+        }
+
+        self.state.into()
+    }
+
+    /// Execute instructions until the computer halts, returning the last state
+    pub fn run(&mut self) -> Option<State> {
+        self.last()
+    }
+}
+
+impl Iterator for Computer {
+    type Item = State;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.step()
+    }
+}
+
+/// return the accumulator value before repeating an instruction
+pub fn one(file_path: &str) -> isize {
+    let program = read_program(file_path);
+    let mut computer = Computer::with_program(program);
+
+    computer.run().map(|state| state.acc).unwrap()
 }
 
 #[cfg(test)]
