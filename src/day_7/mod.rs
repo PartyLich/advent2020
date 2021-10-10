@@ -10,6 +10,10 @@ use crate::day_1::read_file;
 mod two;
 pub use two::two;
 
+lazy_static! {
+    static ref RULE_RE: Regex = Regex::new(r#"(?P<quant>\d+)? ?(?P<bag>\w+ \w+) bags?,?"#).unwrap();
+}
+
 /// Airline luggage nesting rule
 #[derive(Debug, PartialEq)]
 struct Rule {
@@ -21,11 +25,6 @@ struct Rule {
 
 /// Parse [`Rule`]s from a single line &str
 fn parse_rule(rule_str: &str) -> Vec<Rule> {
-    lazy_static! {
-        static ref RULE_RE: Regex =
-            Regex::new(r#"(?P<quant>\d+)? ?(?P<bag>\w+ \w+) bags?,?"#).unwrap();
-    }
-
     let mut parent = String::default();
     RULE_RE
         .captures_iter(rule_str)
