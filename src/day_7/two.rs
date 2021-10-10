@@ -22,6 +22,9 @@ struct Rule {
 }
 
 /// Parse [`Rule`]s from a single line &str
+///
+/// Panics on parse failures because I opted not to write it like a sane person aware of reality
+// in realistic circumstances, prefer a FromStr impl that is, of course, fallible
 fn parse_rule(rule_str: &str) -> Rule {
     let mut parent = Rule {
         name: Default::default(),
