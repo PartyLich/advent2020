@@ -7,6 +7,9 @@ use regex::Regex;
 
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 /// Airline luggage nesting rule
 #[derive(Debug, PartialEq)]
 struct Rule {
