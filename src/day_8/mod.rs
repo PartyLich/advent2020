@@ -2,6 +2,8 @@
 //! --- Day 8: Handheld Halting ---
 use std::str::FromStr;
 
+use crate::day_1::read_file;
+
 /// simple computer operating instruction
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Instruction {
@@ -43,6 +45,16 @@ impl FromStr for Instruction {
     }
 }
 
+/// a list of instructions that together comprise a program
+type Program = Vec<Instruction>;
+
+/// read a set of [`Instruction`]s from a file
+fn read_program(file_path: &str) -> Program {
+    read_file(file_path)
+        .lines()
+        .map(|instruction| instruction.parse().unwrap())
+        .collect()
+}
 
 /// return the accumulator value before looping
 pub fn one(file_path: &str) -> usize {
