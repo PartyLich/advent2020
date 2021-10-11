@@ -1,13 +1,13 @@
+use std::time::Instant;
+
 use advent_2020::*;
 
 macro_rules! show {
     ($day: literal, $text: literal, $file: literal, $fn: path) => {
-        println!(
-            "Day {}:\n\t{}: {}",
-            $day,
-            $text,
-            $fn(&format!("./input/{}.txt", $file))
-        );
+        let start = Instant::now();
+        let result = $fn(&format!("./input/{}.txt", $file));
+        let dur = start.elapsed();
+        println!("Day {}:\n\t{}: {} ({:?})", $day, $text, result, dur,);
     };
 }
 
