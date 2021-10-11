@@ -27,4 +27,5 @@ fn main() {
     show!("7-1", "Valid shiny gold container count", "7-1", day_7::one);
     show!("7-2", "shiny gold descendant count", "7-1", day_7::two);
     show!("8-1", "Last accumulator", "8-1", day_8::one);
+    show!("8-2", "Last accumulator", "8-1", day_8::two);
 }

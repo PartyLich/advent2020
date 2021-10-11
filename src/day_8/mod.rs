@@ -183,6 +183,60 @@ pub fn one(file_path: &str) -> isize {
     computer.run().map(|state| state.acc).unwrap()
 }
 
+/// Execute a program starting at the provided program counter, and return the state flag
+fn test_branch(program: Program, pc: usize) -> Flag {
+    let mut compute = Computer::with_program(program);
+    compute.state.pc = pc;
+
+    compute.run();
+    compute.flag
+}
+
+/// Fix a single jmp or nop instruction by walking every potential branch (and feel quite bad about
+/// the inelegance of it, despite being aware that early optimization may be the worse crime)
+fn repair_program(program: &[Instruction]) -> Program {
+    let mut fixed = program.to_vec();
+
+    // locate cycle
+    let mut compute = Computer::with_program(program.to_vec());
+    compute.run();
+    let start = compute.state.pc;
+
+    // Test modified branches for completion
+    for idx in (0..fixed.len()).rev() {
+        match fixed[idx] {
+            Instruction::Jmp(arg) => {
+                let mut possible = program.to_vec();
+                possible[idx] = Instruction::Nop(arg);
+                if let Flag::Complete = test_branch(possible, start) {
+                    fixed[idx] = Instruction::Nop(arg);
+                    break;
+                }
+            }
+            Instruction::Nop(arg) => {
+                let mut possible = program.to_vec();
+                possible[idx] = Instruction::Jmp(arg);
+                if let Flag::Complete = test_branch(possible, start) {
+                    fixed[idx] = Instruction::Jmp(arg);
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fixed
+}
+
+/// fix a corrupted program, execute the program, and return the accumulator value
+pub fn two(file_path: &str) -> isize {
+    let program = read_program(file_path);
+    let program = repair_program(&program);
+    let mut computer = Computer::with_program(program);
+
+    computer.run().map(|state| state.acc).unwrap()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -204,10 +258,28 @@ mod test {
     }
 
     #[test]
+    fn repairs_program() {
+        let msg = "should change a nop or jmp so that the program may terminate";
+        let program = read_program("input/8-t.txt");
+        let mut expected = read_program("input/8-t.txt");
+        expected[7] = Instruction::Nop(-4);
+        let actual = repair_program(&program);
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
     fn part_one() {
         let msg = "should return the accumulator value before looping";
         let expected = 5;
         let actual = one("input/8-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should return the accumulator value before looping";
+        let expected = 8;
+        let actual = two("input/8-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
