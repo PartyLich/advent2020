@@ -66,6 +66,19 @@ struct State {
     acc: isize,
 }
 
+#[derive(Debug, PartialEq)]
+enum Flag {
+    Idle,
+    Complete,
+    Halted,
+}
+
+impl Default for Flag {
+    fn default() -> Self {
+        Flag::Idle
+    }
+}
+
 /// a simple computer
 #[derive(Debug, Default, PartialEq)]
 struct Computer {
@@ -75,7 +88,7 @@ struct Computer {
     /// previously visited memory locations
     visited: HashSet<usize>,
     /// flag set if program execution causes a halt
-    halted: bool,
+    flag: Flag,
 }
 
 impl Computer {
@@ -89,12 +102,18 @@ impl Computer {
 
     // halt any further instruction execution
     fn halt(&mut self) {
-        self.halted = true;
+        self.flag = Flag::Halted;
     }
 
     /// Execute the next instruction and return a copy of the next system state
     pub fn step(&mut self) -> Option<State> {
-        if self.program.is_empty() || self.halted {
+        if self.program.is_empty() || self.flag != Flag::Idle {
+            return None;
+        }
+        // The program is supposed to terminate by attempting to execute an instruction immediately
+        // after the last instruction in the file.
+        if self.state.pc >= self.program.len() {
+            self.flag = Flag::Complete;
             return None;
         }
 
