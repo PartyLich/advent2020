@@ -23,7 +23,7 @@ enum Instruction {
     /// No OPeration - it does nothing.
     ///
     /// The instruction immediately below it is executed next.
-    Nop(),
+    Nop(isize),
 }
 
 impl FromStr for Instruction {
@@ -40,7 +40,7 @@ impl FromStr for Instruction {
         match instruction {
             "acc" => Ok(Self::Acc(argument)),
             "jmp" => Ok(Self::Jmp(argument)),
-            "nop" => Ok(Self::Nop()),
+            "nop" => Ok(Self::Nop(argument)),
             _ => Err(format!("Unrecognized instruction: {}", instruction)),
         }
     }
@@ -125,7 +125,7 @@ impl Computer {
 
                 self.state = State { pc, ..self.state }
             }
-            Instruction::Nop() => {
+            Instruction::Nop(_) => {
                 let pc = self.state.pc + 1;
                 if self.visited.contains(&pc) {
                     self.halt();
@@ -171,7 +171,7 @@ mod test {
     #[test]
     fn parse_instruction() {
         let msg = "should parse an Instruction from a valid str";
-        let expected = Instruction::Nop();
+        let expected = Instruction::Nop(0);
         let actual: Instruction = "nop +0".parse().unwrap();
         assert_eq!(actual, expected, "{}", msg);
 
