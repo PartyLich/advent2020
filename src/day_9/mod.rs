@@ -43,11 +43,16 @@ fn validate(preamble_len: usize, series: &[usize]) -> Result<(), usize> {
     Ok(())
 }
 
+/// read a series of numbers from a file. panic on errors
+fn series_from_file(file_path: &str) -> Vec<usize> {
+    let file_content = read_file(file_path);
+    read_str(&file_content).unwrap()
+}
+
 /// find the first number which is not the sum of two of the preamble numbers before it
 pub fn one(file_path: &str) -> usize {
     const PREAMBLE: usize = 25;
-    let file_content = read_file(file_path);
-    let series = read_str(&file_content).unwrap();
+    let series = series_from_file(file_path);
 
     validate(PREAMBLE, &series).unwrap_err()
 }
@@ -61,8 +66,7 @@ mod test {
         let msg = "should find the first number which is not the sum of two of the preamble numbers before it";
         let expected = 127;
 
-        let file_content = read_file("input/9-t.txt");
-        let series = read_str(&file_content).unwrap();
+        let series = series_from_file("input/9-t.txt");
         let actual = validate(5, &series).unwrap_err();
 
         assert_eq!(actual, expected, "{}", msg);
