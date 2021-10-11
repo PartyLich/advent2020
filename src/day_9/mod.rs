@@ -57,6 +57,18 @@ pub fn one(file_path: &str) -> usize {
     validate(PREAMBLE, &series).unwrap_err()
 }
 
+/// find a contiguous set of at least two numbers in the series which sum to the invalid number
+/// Return the sum of the smallest and largest number in this contiguous range;
+fn find_weakness(invalid: usize, series: &[usize]) -> usize {
+    todo!()
+}
+
+/// find a contiguous set of at least two numbers in your list which sum to the invalid number
+/// Return the sum of the smallest and largest number in this contiguous range;
+pub fn two(file_path: &str) -> usize {
+    todo!()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -68,6 +80,18 @@ mod test {
 
         let series = series_from_file("input/9-t.txt");
         let actual = validate(5, &series).unwrap_err();
+
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn finds_weakness() {
+        let msg = "should find the sum of the min and max values in the contiguous set that sum to the invalid number";
+        let expected = 62;
+
+        let series = series_from_file("input/9-t.txt");
+        let invalid = validate(5, &series).unwrap_err();
+        let actual = find_weakness(invalid, &series);
 
         assert_eq!(actual, expected, "{}", msg);
     }
