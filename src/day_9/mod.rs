@@ -60,13 +60,34 @@ pub fn one(file_path: &str) -> usize {
 /// find a contiguous set of at least two numbers in the series which sum to the invalid number
 /// Return the sum of the smallest and largest number in this contiguous range;
 fn find_weakness(invalid: usize, series: &[usize]) -> usize {
-    todo!()
+    let (mut start, mut end) = (0, 1);
+    while end < series.len() {
+        let sum: usize = series[start..=end].iter().sum();
+        if sum == invalid {
+            let max = series[start..=end].iter().max().unwrap();
+            let min = series[start..=end].iter().min().unwrap();
+
+            return min + max;
+        }
+
+        if sum < invalid {
+            end += 1;
+        } else {
+            start += 1;
+        }
+    }
+
+    panic!("Failed to find a solution")
 }
 
 /// find a contiguous set of at least two numbers in your list which sum to the invalid number
 /// Return the sum of the smallest and largest number in this contiguous range;
 pub fn two(file_path: &str) -> usize {
-    todo!()
+    const PREAMBLE: usize = 25;
+    let series = series_from_file(file_path);
+    let invalid = validate(PREAMBLE, &series).unwrap_err();
+
+    find_weakness(invalid, &series)
 }
 
 #[cfg(test)]
