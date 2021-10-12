@@ -4,6 +4,8 @@ use std::iter::Sum;
 
 use crate::day_3::load_terrain;
 
+mod two;
+
 /// Map square types
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum Seating {
