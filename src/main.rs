@@ -30,4 +30,6 @@ fn main() {
     show!("8-2", "Last accumulator", "8-1", day_8::two);
     show!("9-1", "First invalid number", "9-1", day_9::one);
     show!("9-2", "Encryption weakness", "9-1", day_9::two);
+    show!("10-1", "Joltage count product", "10-1", day_10::one);
+    show!("10-2", "Distinct adapter arrangements", "10-1", day_10::two);
 }
