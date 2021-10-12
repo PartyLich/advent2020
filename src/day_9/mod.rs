@@ -6,9 +6,9 @@ use std::str::FromStr;
 
 use crate::day_1::read_file;
 
-// reads a newline separated 'series of numbers" (size/range not specified in the problem :( ) from
-// a &str
-fn read_str(serialized: &str) -> Result<Vec<usize>, ParseIntError> {
+/// reads a newline separated 'series of numbers" (size/range not specified in the problem :( ) from
+/// a &str
+pub fn parse_numbers(serialized: &str) -> Result<Vec<usize>, ParseIntError> {
     serialized
         .lines()
         .map(FromStr::from_str)
@@ -46,7 +46,7 @@ fn validate(preamble_len: usize, series: &[usize]) -> Result<(), usize> {
 /// read a series of numbers from a file. panic on errors
 fn series_from_file(file_path: &str) -> Vec<usize> {
     let file_content = read_file(file_path);
-    read_str(&file_content).unwrap()
+    parse_numbers(&file_content).unwrap()
 }
 
 /// find the first number which is not the sum of two of the preamble numbers before it
