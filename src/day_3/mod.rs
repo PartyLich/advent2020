@@ -21,10 +21,11 @@ impl From<char> for Terrain {
     }
 }
 
-type Map = Vec<Vec<Terrain>>;
-
 /// deserializes a 2d vec of [`Terrain`] from the specified file path
-fn load_terrain(file_path: &str) -> Map {
+pub fn load_terrain<T>(file_path: &str) -> Vec<Vec<T>>
+where
+    T: From<char>,
+{
     read_file(file_path)
         .lines()
         .map(|line| line.chars().map(From::from).collect::<Vec<_>>())
@@ -112,7 +113,7 @@ mod test {
             vec![Terrain::Open, Terrain::Open, Terrain::Tree, Terrain::Tree],
             vec![Terrain::Tree, Terrain::Open, Terrain::Open, Terrain::Open],
         ];
-        let actual = load_terrain("input/3-t_terrain.txt");
+        let actual: Vec<Vec<Terrain>> = load_terrain("input/3-t_terrain.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 
