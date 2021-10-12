@@ -49,6 +49,12 @@ pub fn one(file_path: &str) -> usize {
     differences.0 * (differences.2 + 1)
 }
 
+/// returns the total number of distinct ways you can arrange the adapters to connect the charging
+/// outlet to your device
+pub fn two(file_path: &str) -> usize {
+    todo!()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -62,6 +68,18 @@ mod test {
 
         let expected = 10 * 22;
         let actual = one("input/10-t2.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should return the total number of distinct ways you can arrange the adapters to connect the charging outlet to your device";
+        let expected = 8;
+        let actual = two("input/10-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 19208;
+        let actual = two("input/10-t2.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
