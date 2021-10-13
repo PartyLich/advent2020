@@ -1,5 +1,53 @@
 //! Solutions to 2020 day 12
 //! --- Day 12: Rain Risk ---
+use std::str::FromStr;
+
+use crate::day_1::read_file;
+
+/// Ship navigation instruction
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Instruction {
+    North(u32),
+    South(u32),
+    East(u32),
+    West(u32),
+    Left(u32),
+    Right(u32),
+    Forward(u32),
+}
+
+impl FromStr for Instruction {
+    type Err = String;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        let (instruction, argument) = value.split_at(1);
+        let argument: u32 = argument.parse().map_err(|err| {
+            format!(
+                "failed to parse '{}'\n\targument '{}': {:?}",
+                value, argument, err
+            )
+        })?;
+
+        match instruction {
+            "N" => Ok(Self::North(argument)),
+            "S" => Ok(Self::South(argument)),
+            "E" => Ok(Self::East(argument)),
+            "W" => Ok(Self::West(argument)),
+            "L" => Ok(Self::Left(argument)),
+            "R" => Ok(Self::Right(argument)),
+            "F" => Ok(Self::Forward(argument)),
+            _ => Err(format!("Unrecognized instruction: {}", instruction)),
+        }
+    }
+}
+
+/// reads a newline separated list of [`Instruction`]s from a &str
+fn deserialize(serialized: &str) -> Result<Vec<Instruction>, String> {
+    serialized
+        .lines()
+        .map(FromStr::from_str)
+        .collect::<Result<Vec<_>, _>>()
+}
 
 /// return the manhattan distance from the start position
 pub fn one(file_path: &str) -> usize {
@@ -9,6 +57,21 @@ pub fn one(file_path: &str) -> usize {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn deser_instruction() {
+        let msg = "should deserialize an instruction list";
+        let expected = vec![
+            Instruction::Forward(10),
+            Instruction::North(3),
+            Instruction::Forward(7),
+            Instruction::Right(90),
+            Instruction::Forward(11),
+        ];
+        let input = read_file("input/12-t.txt");
+        let actual = deserialize(&input).unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
 
     #[test]
     fn part_one() {
