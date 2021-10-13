@@ -1,5 +1,6 @@
 //! Solutions to 2020 day 12
 //! --- Day 12: Rain Risk ---
+use std::collections::VecDeque;
 use std::str::FromStr;
 
 use crate::day_1::read_file;
@@ -85,9 +86,86 @@ fn deserialize(serialized: &str) -> Result<Vec<Instruction>, String> {
         .collect::<Result<Vec<_>, _>>()
 }
 
+type Position = (i32, i32);
+
+struct Nav {
+    /// List of navigation instructions
+    instructions: VecDeque<Instruction>,
+    /// Current position
+    position: Position,
+    /// Current direction of travel
+    direction: Direction,
+}
+
+impl Nav {
+    pub fn with_instructions(instructions: &[Instruction]) -> Self {
+        Self {
+            position: (0, 0),
+            direction: Direction::East,
+            instructions: instructions.iter().copied().collect(),
+        }
+    }
+
+    fn execute_move(pos: Position, direction: Direction, value: u32) -> Position {
+        let value = value as i32;
+        match direction {
+            Direction::North => (pos.0, pos.1 + value),
+            Direction::South => (pos.0, pos.1 - value),
+            Direction::East => (pos.0 + value, pos.1),
+            Direction::West => (pos.0 - value, pos.1),
+        }
+    }
+
+    /// Advance state by processing next instruction
+    fn next(&mut self) -> Option<()> {
+        if let Some(instruction) = self.instructions.pop_front() {
+            match instruction {
+                Instruction::North(value) => {
+                    self.position = Nav::execute_move(self.position, Direction::North, value);
+                }
+                Instruction::South(value) => {
+                    self.position = Nav::execute_move(self.position, Direction::South, value);
+                }
+                Instruction::East(value) => {
+                    self.position = Nav::execute_move(self.position, Direction::East, value);
+                }
+                Instruction::West(value) => {
+                    self.position = Nav::execute_move(self.position, Direction::West, value);
+                }
+                Instruction::Left(degrees) => {
+                    self.direction = self.direction.change_heading(360 - degrees);
+                }
+                Instruction::Right(degrees) => {
+                    self.direction = self.direction.change_heading(degrees);
+                }
+                Instruction::Forward(value) => {
+                    self.position = Nav::execute_move(self.position, self.direction, value);
+                }
+            }
+            return Some(());
+        }
+
+        None
+    }
+}
+
+impl Iterator for Nav {
+    type Item = ();
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next()
+    }
+}
+
 /// return the manhattan distance from the start position
 pub fn one(file_path: &str) -> usize {
-    todo!()
+    let file_content = read_file(file_path);
+    let instructions = deserialize(&file_content).unwrap();
+    let mut nav = Nav::with_instructions(&instructions);
+
+    while nav.next().is_some() {}
+    let (x, y) = nav.position;
+    (x.abs() + y.abs()) as usize
 }
 
 #[cfg(test)]

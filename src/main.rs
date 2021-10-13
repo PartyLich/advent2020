@@ -34,4 +34,5 @@ fn main() {
     show!("10-2", "Distinct adapter arrangements", "10-1", day_10::two);
     show!("11-1", "Occupied Seats", "11-1", day_11::one);
     show!("11-2", "Occupied Seats", "11-1", day_11::two);
+    show!("12-1", "Manhattan distance", "12-1", day_12::one);
 }
