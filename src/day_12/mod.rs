@@ -84,6 +84,18 @@ fn deserialize(serialized: &str) -> Result<Vec<Instruction>, String> {
 
 type Position = (i32, i32);
 
+/// returns a new coordinate resulting from moving the supplied coordinate in the specified
+/// direction and amount
+fn move_position(pos: Position, direction: Direction, value: u32) -> Position {
+    let value = value as i32;
+    match direction {
+        Direction::North => (pos.0, pos.1 + value),
+        Direction::South => (pos.0, pos.1 - value),
+        Direction::East => (pos.0 + value, pos.1),
+        Direction::West => (pos.0 - value, pos.1),
+    }
+}
+
 struct Nav {
     /// List of navigation instructions
     instructions: VecDeque<Instruction>,
@@ -102,28 +114,18 @@ impl Nav {
         }
     }
 
-    fn execute_move(pos: Position, direction: Direction, value: u32) -> Position {
-        let value = value as i32;
-        match direction {
-            Direction::North => (pos.0, pos.1 + value),
-            Direction::South => (pos.0, pos.1 - value),
-            Direction::East => (pos.0 + value, pos.1),
-            Direction::West => (pos.0 - value, pos.1),
-        }
-    }
-
     /// Advance state by processing next instruction
     fn next(&mut self) -> Option<()> {
         if let Some(instruction) = self.instructions.pop_front() {
             match instruction {
                 Instruction::Move(direction, value) => {
-                    self.position = Nav::execute_move(self.position, direction, value);
+                    self.position = move_position(self.position, direction, value);
                 }
                 Instruction::Turn(degrees) => {
                     self.direction = self.direction.change_heading(degrees);
                 }
                 Instruction::Forward(value) => {
-                    self.position = Nav::execute_move(self.position, self.direction, value);
+                    self.position = move_position(self.position, self.direction, value);
                 }
             }
             return Some(());
