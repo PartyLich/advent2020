@@ -41,6 +41,42 @@ impl FromStr for Instruction {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
+
+impl Direction {
+    pub fn change_heading(&self, degrees: u32) -> Self {
+        // given the problem statement, assume turns are restricted to cardinal directions (thus
+        // multiples of 90 degrees)
+        match degrees {
+            90 => match self {
+                Direction::North => Direction::East,
+                Direction::South => Direction::West,
+                Direction::East => Direction::South,
+                Direction::West => Direction::North,
+            },
+            180 => match self {
+                Direction::North => Direction::South,
+                Direction::South => Direction::North,
+                Direction::East => Direction::West,
+                Direction::West => Direction::East,
+            },
+            270 => match self {
+                Direction::North => Direction::West,
+                Direction::South => Direction::East,
+                Direction::East => Direction::North,
+                Direction::West => Direction::South,
+            },
+            _ => *self,
+        }
+    }
+}
+
 /// reads a newline separated list of [`Instruction`]s from a &str
 fn deserialize(serialized: &str) -> Result<Vec<Instruction>, String> {
     serialized
