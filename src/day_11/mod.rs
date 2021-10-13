@@ -5,6 +5,7 @@ use std::iter::Sum;
 use crate::day_3::load_terrain;
 
 mod two;
+pub use two::two;
 
 /// Map square types
 #[derive(Debug, PartialEq, Clone, Copy)]
