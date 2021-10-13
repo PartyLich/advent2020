@@ -1,4 +1,4 @@
-//! Solutions to 2020 day 10
+//! Solutions to 2020 day 11
 //! --- Day 11: Seating System ---
 use std::iter::Sum;
 
