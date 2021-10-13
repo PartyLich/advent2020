@@ -32,4 +32,6 @@ fn main() {
     show!("9-2", "Encryption weakness", "9-1", day_9::two);
     show!("10-1", "Joltage count product", "10-1", day_10::one);
     show!("10-2", "Distinct adapter arrangements", "10-1", day_10::two);
+    show!("11-1", "Occupied Seats", "11-1", day_11::one);
+    show!("11-2", "Occupied Seats", "11-1", day_11::two);
 }
