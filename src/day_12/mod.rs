@@ -154,6 +154,11 @@ pub fn one(file_path: &str) -> usize {
     (x.abs() + y.abs()) as usize
 }
 
+/// return the manhattan distance from the start position
+pub fn two(file_path: &str) -> usize {
+    todo!()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -180,5 +185,12 @@ mod test {
         let actual = one("input/12-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
-    // }
+
+    #[test]
+    fn part_two() {
+        let msg = "should return the manhattan distance from the start position";
+        let expected = 286;
+        let actual = two("input/12-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
 }
