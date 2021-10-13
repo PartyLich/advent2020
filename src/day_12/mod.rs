@@ -8,12 +8,8 @@ use crate::day_1::read_file;
 /// Ship navigation instruction
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Instruction {
-    North(u32),
-    South(u32),
-    East(u32),
-    West(u32),
-    Left(u32),
-    Right(u32),
+    Move(Direction, u32),
+    Turn(u32),
     Forward(u32),
 }
 
@@ -30,12 +26,12 @@ impl FromStr for Instruction {
         })?;
 
         match instruction {
-            "N" => Ok(Self::North(argument)),
-            "S" => Ok(Self::South(argument)),
-            "E" => Ok(Self::East(argument)),
-            "W" => Ok(Self::West(argument)),
-            "L" => Ok(Self::Left(argument)),
-            "R" => Ok(Self::Right(argument)),
+            "N" => Ok(Self::Move(Direction::North, argument)),
+            "S" => Ok(Self::Move(Direction::South, argument)),
+            "E" => Ok(Self::Move(Direction::East, argument)),
+            "W" => Ok(Self::Move(Direction::West, argument)),
+            "L" => Ok(Self::Turn(360 - argument)),
+            "R" => Ok(Self::Turn(argument)),
             "F" => Ok(Self::Forward(argument)),
             _ => Err(format!("Unrecognized instruction: {}", instruction)),
         }
@@ -120,22 +116,10 @@ impl Nav {
     fn next(&mut self) -> Option<()> {
         if let Some(instruction) = self.instructions.pop_front() {
             match instruction {
-                Instruction::North(value) => {
-                    self.position = Nav::execute_move(self.position, Direction::North, value);
+                Instruction::Move(direction, value) => {
+                    self.position = Nav::execute_move(self.position, direction, value);
                 }
-                Instruction::South(value) => {
-                    self.position = Nav::execute_move(self.position, Direction::South, value);
-                }
-                Instruction::East(value) => {
-                    self.position = Nav::execute_move(self.position, Direction::East, value);
-                }
-                Instruction::West(value) => {
-                    self.position = Nav::execute_move(self.position, Direction::West, value);
-                }
-                Instruction::Left(degrees) => {
-                    self.direction = self.direction.change_heading(360 - degrees);
-                }
-                Instruction::Right(degrees) => {
+                Instruction::Turn(degrees) => {
                     self.direction = self.direction.change_heading(degrees);
                 }
                 Instruction::Forward(value) => {
@@ -177,9 +161,9 @@ mod test {
         let msg = "should deserialize an instruction list";
         let expected = vec![
             Instruction::Forward(10),
-            Instruction::North(3),
+            Instruction::Move(Direction::North, 3),
             Instruction::Forward(7),
-            Instruction::Right(90),
+            Instruction::Turn(90),
             Instruction::Forward(11),
         ];
         let input = read_file("input/12-t.txt");
