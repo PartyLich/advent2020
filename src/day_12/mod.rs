@@ -74,6 +74,12 @@ impl Direction {
     }
 }
 
+impl Default for Direction {
+    fn default() -> Self {
+        Self::East
+    }
+}
+
 /// reads a newline separated list of [`Instruction`]s from a &str
 fn deserialize(serialized: &str) -> Result<Vec<Instruction>, String> {
     serialized
@@ -93,6 +99,19 @@ fn move_position(pos: Position, direction: Direction, value: u32) -> Position {
         Direction::South => (pos.0, pos.1 - value),
         Direction::East => (pos.0 + value, pos.1),
         Direction::West => (pos.0 - value, pos.1),
+    }
+}
+
+/// returns a new coordinate calculated from rotating the supplied coordinate clockwise around the
+/// origin by the specified number of degrees
+fn rotate_position(pos: Position, degrees: u32) -> Position {
+    // given the problem statement, assume turns are restricted to cardinal directions (thus
+    // multiples of 90 degrees)
+    match degrees {
+        90 => (pos.1, -pos.0),
+        180 => (-pos.0, -pos.1),
+        270 => (-pos.1, pos.0),
+        _ => pos,
     }
 }
 
@@ -154,9 +173,56 @@ pub fn one(file_path: &str) -> usize {
     (x.abs() + y.abs()) as usize
 }
 
+#[derive(Debug, PartialEq)]
+struct Nav2 {
+    /// Current position
+    position: Position,
+    /// navigation waypoint relative to current position
+    waypoint: Position,
+}
+
+impl Default for Nav2 {
+    fn default() -> Self {
+        Self {
+            position: Default::default(),
+            waypoint: (10, 1),
+        }
+    }
+}
+
+/// return the next [`Nav`](Nav2) state given an initial state and an [`Instruction`]
+fn process_instruction(state: Nav2, instruction: &Instruction) -> Nav2 {
+    let mut next = Nav2 { ..state };
+    match instruction {
+        Instruction::Move(direction, value) => {
+            // move the waypoint in the given direction by the given value
+            next.waypoint = move_position(next.waypoint, *direction, *value);
+        }
+        Instruction::Turn(degrees) => {
+            // rotate the waypoint around the ship
+            next.waypoint = rotate_position(next.waypoint, *degrees);
+        }
+        Instruction::Forward(value) => {
+            // moves the ship to the waypoint value times
+            next.position.0 += next.waypoint.0 * (*value as i32);
+            next.position.1 += next.waypoint.1 * (*value as i32);
+        }
+    }
+
+    next
+}
+
 /// return the manhattan distance from the start position
+// behavior on structs is notably less flexible than pure functions with struct parameters
 pub fn two(file_path: &str) -> usize {
-    todo!()
+    let file_content = read_file(file_path);
+    let instructions = deserialize(&file_content).unwrap();
+    let nav = instructions
+        .iter()
+        .fold(Nav2::default(), process_instruction);
+    let (x, y) = nav.position;
+
+    (x.abs() + y.abs()) as usize
 }
 
 #[cfg(test)]
