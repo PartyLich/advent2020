@@ -39,6 +39,12 @@ pub fn one(file_path: &str) -> u32 {
         .sum()
 }
 
+/// return the earliest timestamp such that all of the listed bus IDs depart at offsets
+/// matching their positions in the list
+pub fn two(file_path: &str) -> usize {
+    todo!()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -48,6 +54,14 @@ mod test {
         let msg = "should return ID of the earliest bus you can take to the airport multiplied by the number of minutes you'll need to wait";
         let expected = 295;
         let actual = one("input/13-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should return the earliest timestamp such that all of the listed bus IDs depart at offsets matching their positions in the list";
+        let expected = 1068781;
+        let actual = two("input/13-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
