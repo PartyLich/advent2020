@@ -14,6 +14,16 @@ where
         .collect()
 }
 
+/// parse a string of comma separated values into a `Vec` of `Option<T>`
+fn parse_csv<T>(text: &str) -> Vec<Option<T>>
+where
+    T: FromStr,
+{
+    text.split(',')
+        .map(|text| T::from_str(text.trim()).ok())
+        .collect()
+}
+
 /// return ID of the earliest bus you can take to the airport multiplied by the number of minutes
 /// you'll need to wait for that bus
 pub fn one(file_path: &str) -> u32 {
@@ -39,10 +49,54 @@ pub fn one(file_path: &str) -> u32 {
         .sum()
 }
 
+fn find_timestamp(schedule_str: &str) -> usize {
+    let bus_schedules = parse_csv::<usize>(schedule_str);
+
+    let (max_idx, max) = bus_schedules
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.cmp(b.1))
+        .unwrap();
+    let max = max.unwrap();
+    println!("max {:?}", max);
+    let first = bus_schedules.first().unwrap().unwrap();
+
+
+    let mut t = max;
+    let mut t_zero = t - max_idx;
+    while (t_zero % first) != 0
+        || bus_schedules
+            .iter()
+            .enumerate()
+            .skip(1)
+            .filter_map(|(idx, active)| {
+                active.map(|id| {
+                    println!("\t{} % {} == {} - {}", t_zero, id, id, idx);
+                    println!("\t{} == {}", (t_zero) % id, id - idx);
+                    (t_zero % id) == (id - idx)
+                })
+            })
+            .any(|valid| !valid)
+    {
+        println!("t zero {}", t_zero);
+
+        t += max;
+        t_zero = t - max_idx;
+    }
+    println!("\t{} % {} == {}", t_zero, first, t_zero % first);
+
+    t_zero
+}
+
 /// return the earliest timestamp such that all of the listed bus IDs depart at offsets
 /// matching their positions in the list
 pub fn two(file_path: &str) -> usize {
-    todo!()
+    let file_content = read_file(file_path);
+    let (_, bus_schedules) = file_content
+        .split_once("\n")
+        .expect("Unable to parse notes");
+
+    find_timestamp(bus_schedules)
 }
 
 #[cfg(test)]
@@ -54,6 +108,27 @@ mod test {
         let msg = "should return ID of the earliest bus you can take to the airport multiplied by the number of minutes you'll need to wait";
         let expected = 295;
         let actual = one("input/13-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+
+    #[test]
+    fn finds_timestamp() {
+        let msg = "should return the earliest timestamp such that all of the listed bus IDs depart at offsets matching their positions in the list";
+        let expected = 3417;
+        let actual = find_timestamp("17,x,13,19");
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 754018;
+        let actual = find_timestamp("67,7,59,61");
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 1261476;
+        let actual = find_timestamp("67,7,x,59,61");
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 1202161486;
+        let actual = find_timestamp("1789,37,47,1889");
         assert_eq!(actual, expected, "{}", msg);
     }
 

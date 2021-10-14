@@ -37,4 +37,5 @@ fn main() {
     show!("12-1", "Manhattan distance", "12-1", day_12::one);
     show!("12-2", "Manhattan distance", "12-1", day_12::two);
     show!("13-1", "Bus Id * Wait time", "13-1", day_13::one);
+    show!("13-2", "Earliest Timestamp", "13-1", day_13::two);
 }
