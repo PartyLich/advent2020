@@ -1,5 +1,11 @@
 //! Solutions to 2020 day 14 part two
 //! --- Day 14: Docking Data ---
+use std::collections::HashMap;
+use std::str::FromStr;
+
+use crate::day_1::read_file;
+
+use super::{parse_mem_op, MemOp};
 
 /// Operation to perform for a single bit of a bitmask
 #[derive(Clone, Debug, PartialEq)]
@@ -72,9 +78,56 @@ fn apply_mask(mask: &[MaskOp], address: usize) -> Vec<usize> {
     helper(mask, value)
 }
 
+/// Initialization program instruction
+#[derive(Debug)]
+enum Instruction {
+    Memory(MemOp),
+    Mask(Mask),
+}
+
+impl FromStr for Instruction {
+    type Err = String;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let (instr_type, value) = line
+            .split_once(" = ")
+            .ok_or("Failed to parse instruction")?;
+        if instr_type.starts_with("mas") {
+            return Ok(Instruction::Mask(parse_mask(value)));
+        }
+        if instr_type.starts_with("mem") {
+            return Ok(Instruction::Memory(parse_mem_op(line)));
+        }
+
+        Err("Failed to parse instruction".to_string())
+    }
+}
+
 /// returns the sum of the values in memory after executing a the supplied initialization program
 pub fn two(file_path: &str) -> usize {
-    todo!()
+    let serialized = read_file(file_path);
+    let mut mask: Mask = vec![];
+
+    serialized
+        .lines()
+        .map(|line| line.parse().expect("Failed to parse instruction"))
+        .fold(HashMap::new(), |mut memory, instruction| {
+            match instruction {
+                Instruction::Mask(new_mask) => {
+                    mask = new_mask.to_vec();
+                }
+                Instruction::Memory(mem_op) => {
+                    let addresses = apply_mask(&mask, mem_op.0);
+                    addresses.into_iter().for_each(|address| {
+                        memory.insert(address, mem_op.1);
+                    });
+                }
+            }
+
+            memory
+        })
+        .values()
+        .sum()
 }
 
 #[cfg(test)]
