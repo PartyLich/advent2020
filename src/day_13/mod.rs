@@ -49,41 +49,45 @@ pub fn one(file_path: &str) -> u32 {
         .sum()
 }
 
-fn find_timestamp(schedule_str: &str) -> usize {
-    let bus_schedules = parse_csv::<usize>(schedule_str);
+/// find least common multiple
+fn lcm(a: usize, b: usize) -> usize {
+    if a == 0 || b == 0 {
+        return 0;
+    }
 
-    let (max_idx, max) = bus_schedules
+    let min = a.min(b);
+    let max = a.max(b);
+    if max % min == 0 {
+        return max;
+    }
+
+    let mut lcm = max;
+    while lcm % min != 0 {
+        lcm += max;
+    }
+
+    lcm
+}
+
+fn find_timestamp(schedule_str: &str) -> usize {
+    let bus_schedules = parse_csv::<usize>(schedule_str)
         .iter()
         .enumerate()
-        .max_by(|a, b| a.1.cmp(b.1))
-        .unwrap();
-    let max = max.unwrap();
-    println!("max {:?}", max);
-    let first = bus_schedules.first().unwrap().unwrap();
+        .filter_map(|(idx, bus_id)| bus_id.and_then(|bus_id| Some((idx, bus_id))))
+        .collect::<Vec<_>>();
 
+    let (_, first) = bus_schedules.first().unwrap();
 
-    let mut t = max;
-    let mut t_zero = t - max_idx;
-    while (t_zero % first) != 0
-        || bus_schedules
-            .iter()
-            .enumerate()
-            .skip(1)
-            .filter_map(|(idx, active)| {
-                active.map(|id| {
-                    println!("\t{} % {} == {} - {}", t_zero, id, id, idx);
-                    println!("\t{} == {}", (t_zero) % id, id - idx);
-                    (t_zero % id) == (id - idx)
-                })
-            })
-            .any(|valid| !valid)
-    {
-        println!("t zero {}", t_zero);
+    let mut step = *first;
+    let mut t_zero = *first;
 
-        t += max;
-        t_zero = t - max_idx;
+    for (bus_idx, bus_id) in bus_schedules.iter().skip(1) {
+        while (t_zero + bus_idx) % *bus_id != 0 {
+            t_zero += step;
+        }
+
+        step = lcm(step, *bus_id);
     }
-    println!("\t{} % {} == {}", t_zero, first, t_zero % first);
 
     t_zero
 }
@@ -111,6 +115,21 @@ mod test {
         assert_eq!(actual, expected, "{}", msg);
     }
 
+    #[test]
+    fn least_common_multiple() {
+        let msg = "should return the least common multiple";
+        let expected = 90;
+        let actual = lcm(18, 30);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 84;
+        let actual = lcm(21, 28);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 140;
+        let actual = lcm(14, 20);
+        assert_eq!(actual, expected, "{}", msg);
+    }
 
     #[test]
     fn finds_timestamp() {
