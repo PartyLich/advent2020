@@ -1,6 +1,7 @@
 //! Solutions to 2020 day 14
 //! --- Day 14: Docking Data ---
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use crate::day_1::read_file;
 
@@ -73,6 +74,24 @@ enum Instruction {
     Mask(Mask),
 }
 
+impl FromStr for Instruction {
+    type Err = String;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let (instr_type, value) = line
+            .split_once(" = ")
+            .ok_or("Failed to parse instruction")?;
+        if instr_type.starts_with("mas") {
+            return Ok(Instruction::Mask(parse_mask(value)));
+        }
+        if instr_type.starts_with("mem") {
+            return Ok(Instruction::Memory(parse_mem_op(line)));
+        }
+
+        Err("Failed to parse instruction".to_string())
+    }
+}
+
 /// returns the sum of the values in memory after executing a the supplied initialization program
 pub fn one(file_path: &str) -> usize {
     let serialized = read_file(file_path);
@@ -80,14 +99,7 @@ pub fn one(file_path: &str) -> usize {
 
     serialized
         .lines()
-        .map(|line| {
-            let (instr_type, value) = line.split_once(" = ").expect("Failed to parse instruction");
-            if instr_type.starts_with("mas") {
-                Instruction::Mask(parse_mask(value))
-            } else {
-                Instruction::Memory(parse_mem_op(line))
-            }
-        })
+        .map(|line| line.parse().expect("Failed to parse instruction"))
         // may not need all of the values in a contiguous array, so just map used indexes and values
         .fold(HashMap::new(), |mut memory, instruction| {
             match instruction {
