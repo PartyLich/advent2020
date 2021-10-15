@@ -38,4 +38,6 @@ fn main() {
     show!("12-2", "Manhattan distance", "12-1", day_12::two);
     show!("13-1", "Bus Id * Wait time", "13-1", day_13::one);
     show!("13-2", "Earliest Timestamp", "13-1", day_13::two);
+    show!("14-1", "Sum of mem values", "14-1", day_14::one);
+    show!("14-2", "Sum of mem values", "14-1", day_14::two);
 }
