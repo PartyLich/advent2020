@@ -5,6 +5,9 @@ use std::str::FromStr;
 
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 /// Operation to perform for a single bit of a bitmask
 #[derive(Clone, Debug, PartialEq)]
 enum MaskOp {
