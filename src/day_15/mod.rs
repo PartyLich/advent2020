@@ -42,7 +42,10 @@ pub fn one(file_path: &str) -> u32 {
 
 /// return the 30_000_000th number spoken
 pub fn two(file_path: &str) -> u32 {
-    todo!()
+    const STEPS: u32 = 30_000_000;
+    let content = read_file(file_path);
+    let numbers: Vec<u32> = parse_csv_lossy(&content);
+    step(numbers, STEPS)
 }
 
 #[cfg(test)]
