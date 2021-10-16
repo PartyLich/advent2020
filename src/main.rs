@@ -42,4 +42,5 @@ fn main() {
     show!("14-2", "Sum of mem values", "14-1", day_14::two);
     show!("15-1", "2020th number spoken", "15-1", day_15::one);
     show!("15-2", "30_000_000th number spoken", "15-1", day_15::two);
+    show!("16-1", "Ticket scanning error rate", "16-1", day_16::one);
 }
