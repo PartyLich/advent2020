@@ -5,6 +5,9 @@ use std::ops::RangeInclusive;
 use crate::day_1::read_file;
 use crate::day_13::parse_csv_lossy;
 
+pub use two::two;
+mod two;
+
 type Ticket = Vec<u32>;
 
 /// parse a set of comma-separated values into a list of Tickets
