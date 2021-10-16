@@ -1,5 +1,5 @@
 //! Solutions to 2020 day 15
-//!
+//! --- Day 15: Rambunctious Recitation ---
 use std::collections::HashMap;
 
 use crate::day_1::read_file;
