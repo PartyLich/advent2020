@@ -40,6 +40,11 @@ pub fn one(file_path: &str) -> u32 {
     step(numbers, STEPS)
 }
 
+/// return the 30_000_000th number spoken
+pub fn two(file_path: &str) -> u32 {
+    todo!()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -72,6 +77,38 @@ mod test {
         assert_eq!(actual, expected, "{}", msg);
 
         let expected = 1836;
+        let actual = step(vec![3, 1, 2], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should return the 30000000th number spoken";
+        let expected = 175594;
+        let actual = step(vec![0, 3, 6], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 2578;
+        let actual = step(vec![1, 3, 2], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 3544142;
+        let actual = step(vec![2, 1, 3], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 261214;
+        let actual = step(vec![1, 2, 3], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 6895259;
+        let actual = step(vec![2, 3, 1], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 18;
+        let actual = step(vec![3, 2, 1], 2020);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 362;
         let actual = step(vec![3, 1, 2], 2020);
         assert_eq!(actual, expected, "{}", msg);
     }
