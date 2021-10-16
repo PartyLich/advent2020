@@ -40,4 +40,6 @@ fn main() {
     show!("13-2", "Earliest Timestamp", "13-1", day_13::two);
     show!("14-1", "Sum of mem values", "14-1", day_14::one);
     show!("14-2", "Sum of mem values", "14-1", day_14::two);
+    show!("15-1", "2020th number spoken", "15-1", day_15::one);
+    show!("15-2", "30_000_000th number spoken", "15-1", day_15::two);
 }

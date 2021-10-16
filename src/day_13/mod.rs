@@ -5,7 +5,7 @@ use std::str::FromStr;
 use crate::day_1::read_file;
 
 /// parse a string of comma separated values into a `Vec` of `T`, discarding failures
-fn parse_csv_lossy<T>(text: &str) -> Vec<T>
+pub fn parse_csv_lossy<T>(text: &str) -> Vec<T>
 where
     T: FromStr,
 {
