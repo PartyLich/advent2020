@@ -26,6 +26,7 @@ fn discard_invalid_tickets(fields: &[Field], tickets: &[Ticket]) -> Vec<Ticket> 
 fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
     let mut cache: HashMap<u32, HashSet<usize>> = HashMap::new();
 
+    // map each ticket value to the list of rules that it matches
     let mut matching_rules = tickets
         .iter()
         .map(|ticket| {
@@ -58,6 +59,7 @@ fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
         .unwrap();
 
     let mut visited = HashSet::new();
+    // store set of unique matches (ie the value matches exactly one rule)
     for rule_list in matching_rules
         .iter()
         .filter(|rule_list| rule_list.len() == 1)
@@ -65,6 +67,7 @@ fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
         visited = visited.union(rule_list).copied().collect();
     }
 
+    // use unique match list to eliminate choices and narrow each list to a unique value
     while matching_rules.iter().any(|rule_list| rule_list.len() > 1) {
         for rule_list in matching_rules
             .iter_mut()
@@ -77,6 +80,7 @@ fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
         }
     }
 
+    // package result
     matching_rules
         .iter()
         // all of our sets should have a single element at this point
