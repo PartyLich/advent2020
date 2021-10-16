@@ -12,7 +12,7 @@ fn parse_tickets(input: &str) -> Vec<Ticket> {
     input.lines().skip(1).map(parse_csv_lossy).collect()
 }
 
-type Field = RangeInclusive<u32>;
+type Field = (String, Vec<RangeInclusive<u32>>);
 
 /// parse list of fields that exist somewhere on the ticket
 //
@@ -21,11 +21,11 @@ type Field = RangeInclusive<u32>;
 fn parse_fields(input: &str) -> Vec<Field> {
     input
         .lines()
-        .flat_map(|line| {
-            let (_name, ranges) = line
+        .map(|line| {
+            let (name, ranges) = line
                 .split_once(":")
                 .unwrap_or_else(|| panic!("Failed to parse range '{}'", line));
-            ranges
+            let ranges = ranges
                 .split(" or ")
                 .map(|range| {
                     let (min, max) = range
@@ -37,7 +37,8 @@ fn parse_fields(input: &str) -> Vec<Field> {
 
                     min..=max
                 })
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>();
+            (name.to_string(), ranges)
         })
         .collect()
 }
@@ -66,7 +67,7 @@ fn parse_input(input: &str) -> TicketInfo {
 
 /// return the invalid values (values that are not in any of the specified ranges) in a list of
 /// tickets
-fn get_nearby_errors(fields: &[Field], tickets: &[Ticket]) -> Vec<u32> {
+fn get_nearby_errors(fields: &[RangeInclusive<u32>], tickets: &[Ticket]) -> Vec<u32> {
     tickets
         .iter()
         .flat_map(|ticket| {
@@ -85,8 +86,16 @@ pub fn one(file_path: &str) -> u32 {
     let contents = read_file(file_path);
     // parse file
     let input = parse_input(&contents);
+    let fields = input
+        .fields
+        .iter()
+        // discard unused data
+        .flat_map(|(_name, ranges)| ranges)
+        .cloned()
+        .collect::<Vec<_>>();
+
     // error check nearby tickets
-    get_nearby_errors(&input.fields, &input.nearby_tickets)
+    get_nearby_errors(&fields, &input.nearby_tickets)
         .iter()
         .sum()
 }
