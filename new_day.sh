@@ -23,5 +23,7 @@ touch $path/mod.rs
 # add module to lib
 echo "updating lib.rs"
 echo "pub mod day_$day;" >> src/lib.rs
+echo "formatting"
+cargo-fmt
 
 echo "done."
