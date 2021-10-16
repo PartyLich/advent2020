@@ -85,34 +85,31 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn part_two() {
-        let msg = "should return the 30000000th number spoken";
-        let expected = 175594;
-        let actual = step(vec![0, 3, 6], 2020);
-        assert_eq!(actual, expected, "{}", msg);
+        let cases = vec![
+            // expected, test data
+            (175594, vec![0, 3, 6]),
+            (362, vec![3, 1, 2]),
+            (2578, vec![1, 3, 2]),
+            (3544142, vec![2, 1, 3]),
+            (261214, vec![1, 2, 3]),
+            (6895259, vec![2, 3, 1]),
+            (18, vec![3, 2, 1]),
+            (362, vec![3, 1, 2]),
+        ];
 
-        let expected = 2578;
-        let actual = step(vec![1, 3, 2], 2020);
-        assert_eq!(actual, expected, "{}", msg);
-
-        let expected = 3544142;
-        let actual = step(vec![2, 1, 3], 2020);
-        assert_eq!(actual, expected, "{}", msg);
-
-        let expected = 261214;
-        let actual = step(vec![1, 2, 3], 2020);
-        assert_eq!(actual, expected, "{}", msg);
-
-        let expected = 6895259;
-        let actual = step(vec![2, 3, 1], 2020);
-        assert_eq!(actual, expected, "{}", msg);
-
-        let expected = 18;
-        let actual = step(vec![3, 2, 1], 2020);
-        assert_eq!(actual, expected, "{}", msg);
-
-        let expected = 362;
-        let actual = step(vec![3, 1, 2], 2020);
-        assert_eq!(actual, expected, "{}", msg);
+        let cases: Vec<_> = cases
+            .into_iter()
+            .map(|case| {
+                std::thread::spawn(|| {
+                    let msg = "should return the 30000000th number spoken";
+                    let expected = case.0;
+                    let actual = step(case.1, 30_000_000);
+                    assert_eq!(actual, expected, "{}", msg);
+                })
+            })
+            .collect();
+        cases.into_iter().for_each(|case| case.join().unwrap());
     }
 }
