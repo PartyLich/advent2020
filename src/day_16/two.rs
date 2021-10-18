@@ -47,30 +47,15 @@ fn get_match_set(
         .collect::<Vec<_>>()
 }
 
-/// return a map of field names to their ticket data index
-fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
-    let mut cache: HashMap<u32, HashSet<usize>> = HashMap::new();
-
-    // map each ticket value to the list of rules that it matches
-    let mut matching_rules = tickets
-        .iter()
-        .map(|ticket| get_match_set(&mut cache, fields, ticket))
-        .reduce(|mut acc, ticket| {
-            for idx in 0..acc.len() {
-                acc[idx] = acc[idx].intersection(&ticket[idx]).copied().collect();
-            }
-            acc
-        })
-        .unwrap();
-
-    let mut visited = HashSet::new();
+/// return the set of unique matches (ie the value matches exactly one rule)
+fn get_unique_rules(mut matching_rules: Vec<HashSet<usize>>) -> Vec<HashSet<usize>> {
     // store set of unique matches (ie the value matches exactly one rule)
-    for rule_list in matching_rules
+    let mut visited: HashSet<usize> = matching_rules
         .iter()
         .filter(|rule_list| rule_list.len() == 1)
-    {
-        visited = visited.union(rule_list).copied().collect();
-    }
+        .cloned()
+        .reduce(|visited, rule_list| visited.union(&rule_list).copied().collect())
+        .unwrap();
 
     // use unique match list to eliminate choices and narrow each list to a unique value
     while matching_rules.iter().any(|rule_list| rule_list.len() > 1) {
@@ -85,8 +70,28 @@ fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
         }
     }
 
-    // package result
     matching_rules
+}
+
+/// return a map of field names to their ticket data index
+fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
+    let mut cache: HashMap<u32, HashSet<usize>> = HashMap::new();
+
+    // map each ticket value to the list of rules that it matches
+    let matching_rules = tickets
+        .iter()
+        .map(|ticket| get_match_set(&mut cache, fields, ticket))
+        .reduce(|mut acc, ticket| {
+            for idx in 0..acc.len() {
+                acc[idx] = acc[idx].intersection(&ticket[idx]).copied().collect();
+            }
+            acc
+        })
+        .unwrap();
+
+    // store set of unique matches (ie the value matches exactly one rule)
+    get_unique_rules(matching_rules)
+        // package result
         .iter()
         // all of our sets should have a single element at this point
         .map(|set| set.iter().take(1).collect::<Vec<_>>()[0])
