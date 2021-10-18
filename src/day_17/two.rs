@@ -141,6 +141,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn part_two() {
         let msg = "should return the number of cubes in the active state after the sixth cycle";
         let expected = 848;
