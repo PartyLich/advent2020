@@ -22,6 +22,31 @@ fn discard_invalid_tickets(fields: &[Field], tickets: &[Ticket]) -> Vec<Ticket> 
         .collect()
 }
 
+/// map each ticket value to the list of rules that it matches
+fn get_match_set(
+    cache: &mut HashMap<u32, HashSet<usize>>,
+    fields: &[Field],
+    ticket: &[u32],
+) -> Vec<HashSet<usize>> {
+    ticket
+        .iter()
+        .map(|value| {
+            if let Some(set) = cache.get(value) {
+                return set.clone();
+            }
+            let set = fields
+                .iter()
+                .enumerate()
+                .filter(|(_idx, (_name, ranges))| ranges.iter().any(|range| range.contains(value)))
+                .map(|(field_idx, _)| field_idx)
+                .collect::<HashSet<usize>>();
+
+            cache.insert(*value, set.clone());
+            set
+        })
+        .collect::<Vec<_>>()
+}
+
 /// return a map of field names to their ticket data index
 fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
     let mut cache: HashMap<u32, HashSet<usize>> = HashMap::new();
@@ -29,27 +54,7 @@ fn map_fields(fields: &[Field], tickets: &[Ticket]) -> HashMap<String, usize> {
     // map each ticket value to the list of rules that it matches
     let mut matching_rules = tickets
         .iter()
-        .map(|ticket| {
-            ticket
-                .iter()
-                .map(|value| {
-                    if let Some(set) = cache.get(value) {
-                        return set.clone();
-                    }
-                    let set = fields
-                        .iter()
-                        .enumerate()
-                        .filter(|(_idx, (_name, ranges))| {
-                            ranges.iter().any(|range| range.contains(value))
-                        })
-                        .map(|(field_idx, _)| field_idx)
-                        .collect::<HashSet<usize>>();
-
-                    cache.insert(*value, set.clone());
-                    set
-                })
-                .collect::<Vec<_>>()
-        })
+        .map(|ticket| get_match_set(&mut cache, fields, ticket))
         .reduce(|mut acc, ticket| {
             for idx in 0..acc.len() {
                 acc[idx] = acc[idx].intersection(&ticket[idx]).copied().collect();
