@@ -45,4 +45,5 @@ fn main() {
     show!("16-1", "Ticket scanning error rate", "16-1", day_16::one);
     show!("16-2", "Product of departure fields", "16-1", day_16::two);
     show!("17-1", "Active cubes", "17-1", day_17::one);
+    show!("17-2", "Active cubes", "17-1", day_17::two);
 }
