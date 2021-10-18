@@ -24,11 +24,15 @@ fn to_active(enumerated_line: (usize, &str)) -> HashSet<Triple> {
 }
 
 /// parse initial conway cube state from string
-fn parse_state(serialized: &str) -> HashSet<Triple> {
+fn parse_state<T, F>(into: F, serialized: &str) -> HashSet<T>
+where
+    F: FnMut((usize, &str)) -> HashSet<T>,
+    T: Eq + std::hash::Hash + Clone,
+{
     serialized
         .lines()
         .enumerate()
-        .map(to_active)
+        .map(into)
         .reduce(|acc, next| &acc | &next)
         .unwrap()
 }
@@ -100,7 +104,7 @@ fn next_state(state: &HashSet<Triple>) -> HashSet<Triple> {
 /// Count the number of cubes in the active state after the sixth cycle
 pub fn one(file_path: &str) -> usize {
     let input = read_file(file_path);
-    let mut state = parse_state(&input);
+    let mut state = parse_state(to_active, &input);
 
     for _ in 0..6 {
         state = next_state(&state);

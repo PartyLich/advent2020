@@ -4,6 +4,8 @@ use std::collections::HashSet;
 
 use crate::day_1::read_file;
 
+use super::parse_state;
+
 type Quad = (isize, isize, isize, isize);
 
 /// map a line of serialized conway cube states to the set of active coordinates
@@ -18,16 +20,6 @@ fn to_active(enumerated_line: (usize, &str)) -> HashSet<Quad> {
             }
             _ => acc,
         })
-}
-
-/// parse initial conway cube state from string
-fn parse_state(serialized: &str) -> HashSet<Quad> {
-    serialized
-        .lines()
-        .enumerate()
-        .map(to_active)
-        .reduce(|acc, next| &acc | &next)
-        .unwrap()
 }
 
 /// Returns a Some with the count of neighbors, if count is < max. Otherwise returns None.
@@ -101,7 +93,7 @@ fn next_state(state: &HashSet<Quad>) -> HashSet<Quad> {
 /// Count the number of cubes in the active state after the sixth cycle
 pub fn two(file_path: &str) -> usize {
     let input = read_file(file_path);
-    let mut state = parse_state(&input);
+    let mut state = parse_state(to_active, &input);
 
     for _ in 0..6 {
         state = next_state(&state);
