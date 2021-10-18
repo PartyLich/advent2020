@@ -4,6 +4,9 @@ use std::collections::HashSet;
 
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 type Triple = (isize, isize, isize);
 
 /// map a line of serialized conway cube states to the set of active coordinates
