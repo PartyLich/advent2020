@@ -21,7 +21,10 @@ enum Op {
 impl Op {
     /// apply this operation to the supplied operands
     pub fn apply(&self, left: u32, right: u32) -> u32 {
-        todo!()
+        match self {
+            Self::Mult => left * right,
+            Self::Add => left + right,
+        }
     }
 }
 
@@ -67,6 +70,22 @@ pub fn one(file_path: &str) -> u32 {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn ops_add() {
+        let msg = "should sum the operands";
+        let expected = 69;
+        let actual = Op::Add.apply(33, 36);
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn ops_mult() {
+        let msg = "should multiply the operands";
+        let expected = 69;
+        let actual = Op::Mult.apply(23, 3);
+        assert_eq!(actual, expected, "{}", msg);
+    }
 
     #[test]
     fn part_one() {
