@@ -2,6 +2,9 @@
 //! --- Day 18: Operation Order ---
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 /// Value that can be used with an [operation](Op)
 #[derive(Debug, PartialEq, Clone)]
 enum Operand {
