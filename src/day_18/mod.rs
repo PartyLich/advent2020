@@ -88,6 +88,43 @@ mod test {
     }
 
     #[test]
+    fn evaluates_expression() {
+        let msg = "should return the value of the expression after evaluation";
+        let expected = 7;
+        let rhs = Expression {
+            lhs: Operand::Number(2).into(),
+            rhs: Operand::Number(3).into(),
+            op: Op::Mult,
+        };
+        let expression = Expression {
+            lhs: Operand::Number(1).into(),
+            op: Op::Add,
+            rhs: Operand::Expr(rhs).into(),
+        };
+        let actual = evaluate(expression);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 21;
+        let expression = Expression {
+            lhs: Operand::Expr(Expression {
+                lhs: Operand::Number(2).into(),
+                rhs: Operand::Number(4).into(),
+                op: Op::Add,
+            })
+            .into(),
+            op: Op::Add,
+            rhs: Operand::Expr(Expression {
+                lhs: Operand::Number(6).into(),
+                rhs: Operand::Number(9).into(),
+                op: Op::Add,
+            })
+            .into(),
+        };
+        let actual = evaluate(expression);
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
     fn part_one() {
         let msg = "should sum the result of each line";
         let expected = 26_457;
