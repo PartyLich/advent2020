@@ -33,12 +33,12 @@ impl Op {
 /// [Operands](Operand) and [Operations](Op) that form a single value
 #[derive(Debug, PartialEq, Clone)]
 struct Expression {
-    /// right hand side
-    rhs: Box<Operand>,
-    /// operation
-    op: Op,
     /// left hand side
     lhs: Box<Operand>,
+    /// operation
+    op: Op,
+    /// right hand side
+    rhs: Box<Operand>,
 }
 
 // recursive [`Expression`] parsing helper
