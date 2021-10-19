@@ -8,7 +8,7 @@ enum Operand {
     /// parenthesized sub expression
     Expr(Expression),
     /// number
-    Number(u32),
+    Number(usize),
 }
 
 /// Operation that can be applied to two numbers
@@ -22,7 +22,7 @@ enum Op {
 
 impl Op {
     /// apply this operation to the supplied operands
-    pub fn apply(&self, left: u32, right: u32) -> u32 {
+    pub fn apply(&self, left: usize, right: usize) -> usize {
         match self {
             Self::Mult => left * right,
             Self::Add => left + right,
@@ -91,7 +91,7 @@ fn parse_expr(mut lhs: Option<Operand>, string: &str) -> Result<(&str, Operand),
             character if character.is_digit(10) => {
                 // part of a number
                 // NOTE: input contains only 0-9
-                let num = character.to_digit(10).unwrap();
+                let num = character.to_digit(10).unwrap() as usize;
                 if lhs.is_none() {
                     lhs = Some(Operand::Number(num));
                 } else if rhs.is_none() {
@@ -128,7 +128,7 @@ fn from_str(string: &str) -> Result<Expression, String> {
 }
 
 /// Return the result of evaluating an expression
-fn evaluate(expr: Expression) -> u32 {
+fn evaluate(expr: Expression) -> usize {
     let left = match *expr.lhs {
         Operand::Number(num) => num,
         Operand::Expr(expression) => evaluate(expression),
@@ -142,7 +142,7 @@ fn evaluate(expr: Expression) -> u32 {
 }
 
 /// return the sum of the expressions on each line
-pub fn one(file_path: &str) -> u32 {
+pub fn one(file_path: &str) -> usize {
     let input = read_file(file_path);
     input
         .lines()
