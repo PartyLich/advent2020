@@ -3,6 +3,7 @@
 use crate::day_1::read_file;
 
 /// Value that can be used with an [operation](Op)
+#[derive(Debug, PartialEq, Clone)]
 enum Operand {
     /// parenthesized sub expression
     Expr(Expression),
@@ -11,6 +12,7 @@ enum Operand {
 }
 
 /// Operation that can be applied to two numbers
+#[derive(Debug, PartialEq, Clone)]
 enum Op {
     /// addition
     Add,
@@ -29,6 +31,7 @@ impl Op {
 }
 
 /// [Operands](Operand) and [Operations](Op) that form a single value
+#[derive(Debug, PartialEq, Clone)]
 struct Expression {
     /// right hand side
     rhs: Box<Operand>,
