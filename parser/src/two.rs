@@ -196,6 +196,32 @@ fn optional<'a, T: 'a + Clone>(parser: Parser<'a, T>) -> Parser<'a, Option<T>> {
     or_else(some, none)
 }
 
+/// parse an integer (with sign support)
+fn parse_int2<'a>() -> Parser<'a, isize> {
+    // helper
+    fn result_to_int((sign, digits): (Option<char>, Vec<char>)) -> isize {
+        let i = digits
+            .into_iter()
+            .collect::<String>()
+            // ignore int overflow for now
+            .parse::<isize>()
+            .unwrap();
+        match sign {
+            Some(_) => -i,
+            None => i,
+        }
+    }
+
+    // define parser for one digit
+    let digit = parse_digit();
+    // define parser for one or more digits
+    let digits = one_or_more(digit);
+
+    // map the digits to an int
+    let int = and_then(optional(p_char('-')), digits);
+    int.map(result_to_int)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -293,6 +319,21 @@ mod test {
 
         let expected = ("", ('1', None));
         let actual = digit_then_semicolon.parse("1").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn signed_integer() {
+        let msg = "should parse an integer";
+
+        let parse_int = parse_int2();
+
+        let expected = ("C", 123);
+        let actual = parse_int.parse("123C").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("C", -123);
+        let actual = parse_int.parse("-123C").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
