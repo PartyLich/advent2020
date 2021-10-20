@@ -107,7 +107,72 @@ where
     }
 }
 
+// 2-4. Matching a parser multiple times
+
+impl<T> Clone for Parser<'_, T> {
+    fn clone(&self) -> Self {
+        Parser {
+            parse: self.parse.clone(),
+        }
+    }
+}
+
+/// (helper) match zero or more occurrences of the specified parser
+fn zero_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+    Parser {
+        parse: Rc::new(move |input: &str| {
+            // run parser with the input
+            let first_result = parser.parse(input);
+            // test the result for Failure/Success
+            match first_result {
+                // if parse fails, return empty list
+                Err(_err) => Ok((input, vec![])),
+                // if parse succeeds, call recursively to get the subsequent values
+                Ok((input_after_first_parse, first_value)) => {
+                    let (remaining_input, mut subsequent_values) = zero_or_more(parser.clone())
+                        .parse(input_after_first_parse)
+                        .unwrap();
+                    let mut values = vec![first_value];
+                    values.append(&mut subsequent_values);
+                    Ok((remaining_input, values))
+                }
+            }
+        }),
+    }
+}
+
+/// match zero or more occurrences of the specified parser
+fn many<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+    Parser {
+        parse: Rc::new(move |input: &str| zero_or_more(parser.clone()).parse(input)),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn many_matches() {
+        let msg = "should ";
+
+        let many_a = many(p_char('A'));
+
+        let expected = ("BCD", vec!['A']);
+        let actual = many_a.parse("ABCD").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("CD", vec!['A', 'A']);
+        let actual = many_a.parse("AACD").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("D", vec!['A', 'A', 'A']);
+        let actual = many_a.parse("AAAD").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        // test a case with no matches
+        let expected = ("|BCD", vec![]);
+        let actual = many_a.parse("|BCD").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
 }
