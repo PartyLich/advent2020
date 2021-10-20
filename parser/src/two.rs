@@ -187,6 +187,15 @@ fn parse_int<'a>() -> Parser<'a, isize> {
     digits.map(result_to_int)
 }
 
+// 2-5. Matching a parser zero or one time
+
+/// Parses an optional occurrence of p and returns an option value.
+fn optional<'a, T: 'a + Clone>(parser: Parser<'a, T>) -> Parser<'a, Option<T>> {
+    let some = parser.map(Option::from);
+    let none = Parser::of(None);
+    or_else(some, none)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -268,6 +277,22 @@ mod test {
         // failure case
         let expected = "Expected '9', found 'A'".to_string();
         let actual = parse_int.parse("ABC").unwrap_err();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn optionals() {
+        let msg = "should ";
+
+        let digit = parse_digit();
+        let digit_then_semicolon = and_then(digit, optional(p_char(';')));
+
+        let expected = ("", ('1', Some(';')));
+        let actual = digit_then_semicolon.parse("1;").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("", ('1', None));
+        let actual = digit_then_semicolon.parse("1").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
