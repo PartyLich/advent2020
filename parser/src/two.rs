@@ -222,6 +222,15 @@ fn parse_int2<'a>() -> Parser<'a, isize> {
     int.map(result_to_int)
 }
 
+// 2-6. Throwing results away
+/// Keep only the result of the left side parser
+fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, T> {
+    // create a pair
+    let both = and_then(p1, p2);
+    // then only keep the first value
+    both.map(|(a, _b)| a)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -334,6 +343,21 @@ mod test {
 
         let expected = ("C", -123);
         let actual = parse_int.parse("-123C").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn keeps_first() {
+        let msg = "should keep the results of the first parser";
+
+        let digit = parse_digit();
+        let digit_then_semicolon = keep_first(digit, optional(p_char(';')));
+
+        let expected = ("", '1');
+        let actual = digit_then_semicolon.parse("1;").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let actual = digit_then_semicolon.parse("1").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
