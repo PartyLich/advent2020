@@ -87,9 +87,27 @@ impl<'a, T: 'a> Parser<'a, T> {
     }
 }
 
+// 2-2. Lifting functions to the world of Parsers
+trait Pointed<T> {
+    /// Lift a value to a context
+    fn of(value: T) -> Self;
+}
+
+impl<'a, T: 'a> Pointed<T> for Parser<'a, T>
+where
+    T: Clone,
+{
+    fn of(value: T) -> Self {
+        Parser {
+            parse: Rc::new(move |input: &str| {
+                // ignore the input and return value
+                Ok((input, value.clone()))
+            }),
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
-
 }
