@@ -71,6 +71,22 @@ fn parse_digit<'a>() -> Parser<'a, char> {
     any_of('0'..='9')
 }
 
+// 2-1. Transforming the contents of a parser with “map”
+
+// add map for Parser
+impl<'a, T: 'a> Parser<'a, T> {
+    /// apply a function to the value inside a parser
+    pub fn map<U>(self, f: impl Fn(T) -> U + 'a) -> Parser<'a, U> {
+        Parser {
+            parse: Rc::new(move |input: &str| {
+                let (remaining, result) = (self.parse)(input)?;
+                let mapped_value = f(result);
+                Ok((remaining, mapped_value))
+            }),
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod test {
