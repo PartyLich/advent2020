@@ -166,6 +166,27 @@ fn one_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
     }
 }
 
+/// parse an integer (without sign support)
+fn parse_int<'a>() -> Parser<'a, isize> {
+    // helper
+    fn result_to_int(digits: Vec<char>) -> isize {
+        digits
+            .into_iter()
+            .collect::<String>()
+            // ignore int overflow for now
+            .parse::<isize>()
+            .unwrap()
+    }
+
+    // define parser for one digit
+    let digit = parse_digit();
+    // define parser for one or more digits
+    let digits = one_or_more(digit);
+
+    // map the digits to an int
+    digits.map(result_to_int)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -219,6 +240,34 @@ mod test {
         // failure case
         let expected = "Expected '9', found 'A'".to_string();
         let actual = digits.parse("ABC").unwrap_err();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn integer() {
+        let msg = "should parse an integer";
+
+        let parse_int = parse_int();
+
+        let expected = ("ABC", 1);
+        let actual = parse_int.parse("1ABC").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("BC", 12);
+        let actual = parse_int.parse("12BC").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("C", 123);
+        let actual = parse_int.parse("123C").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("", 1234);
+        let actual = parse_int.parse("1234").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        // failure case
+        let expected = "Expected '9', found 'A'".to_string();
+        let actual = parse_int.parse("ABC").unwrap_err();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
