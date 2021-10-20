@@ -47,4 +47,5 @@ fn main() {
     show!("17-1", "Active cubes", "17-1", day_17::one);
     show!("17-2", "Active cubes", "17-1", day_17::two);
     show!("18-1", "Sum of expressions", "18-1", day_18::one);
+    show!("18-2", "Sum of expressions", "18-1", day_18::two);
 }
