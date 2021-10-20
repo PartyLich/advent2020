@@ -6,7 +6,97 @@ use super::{evaluate, Expression, Op, Operand};
 
 // recursive [`Expression`] parsing helper
 fn parse_expr(mut lhs: Option<Operand>, string: &str) -> Result<(&str, Operand), String> {
-    todo!();
+    if string.is_empty() {
+        return lhs
+            .map(|lhs| (string, lhs))
+            .ok_or_else(|| "Missing LHS operand".to_string());
+    }
+
+    let mut rhs: Option<Operand> = None;
+    let mut op: Option<Op> = None;
+    for (idx, character) in string.char_indices() {
+        if let (Some(lhs), Some(op), Some(rhs)) = (&lhs, &op, &rhs) {
+            return parse_expr(
+                Some(Operand::Expr(Expression {
+                    lhs: lhs.clone().into(),
+                    rhs: rhs.clone().into(),
+                    op: op.clone(),
+                })),
+                &string[idx..],
+            );
+        }
+
+        match character {
+            ')' => {
+                // end of expression
+                return lhs
+                    .map(|lhs| (&string[idx + 1..], lhs))
+                    .ok_or_else(|| "Missing LHS operand".to_string());
+            }
+            '(' => {
+                // new expression
+                let (remaining, expr) = parse_expr(None, &string[idx + 1..])?;
+
+                if lhs.is_none() {
+                    return parse_expr(Some(expr), remaining);
+                }
+                if rhs.is_none() {
+                    return parse_expr(
+                        Some(Operand::Expr(Expression {
+                            lhs: lhs.unwrap().into(),
+                            rhs: expr.into(),
+                            op: op.unwrap(),
+                        })),
+                        remaining,
+                    );
+                }
+            }
+            character if character.is_digit(10) => {
+                // part of a number
+                // NOTE: input contains only 0-9
+                let num = character.to_digit(10).unwrap() as usize;
+                if lhs.is_none() {
+                    lhs = Some(Operand::Number(num));
+                } else if rhs.is_none() {
+                    rhs = Some(Operand::Number(num));
+                }
+            }
+            '*' => {
+                op = Some(Op::Mult);
+
+                // new expression
+                let (remaining, expr) = parse_expr(None, &string[idx + 1..])?;
+
+                // complete expression
+                return Ok((
+                    remaining,
+                    Operand::Expr(Expression {
+                        lhs: lhs.unwrap().into(),
+                        rhs: expr.into(),
+                        op: op.unwrap(),
+                    }),
+                ));
+            }
+            '+' => {
+                op = Some(Op::Add);
+            }
+            _ => {}
+        }
+    }
+
+    match op {
+        None => lhs
+            .map(|lhs| ("", lhs))
+            .ok_or_else(|| "Missing LHS operand".to_string()),
+        Some(op) => Ok((
+            "",
+            Operand::Expr(Expression {
+                lhs: lhs.unwrap().into(),
+                rhs: rhs.unwrap().into(),
+                op,
+            }),
+        )),
+    }
 }
 
 /// parse an [`Expression`] from a string
