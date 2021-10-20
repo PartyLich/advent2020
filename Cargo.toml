@@ -2,4 +2,5 @@
 
 members = [
     "advent_2020",
+    "parser",
 ]
