@@ -148,6 +148,24 @@ fn many<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
     }
 }
 
+/// match one or more occurrences of the specified parser
+fn one_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+    Parser {
+        parse: Rc::new(move |input: &str| {
+            // run parser with the input
+            let (input_after_first_parse, first_value) = parser.parse(input)?;
+
+            // if first found, look for zeroOrMore now
+            let (remaining_input, mut subsequent_values) = zero_or_more(parser.clone())
+                .parse(input_after_first_parse)
+                .unwrap();
+            let mut values = vec![first_value];
+            values.append(&mut subsequent_values);
+            Ok((remaining_input, values))
+        }),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -173,6 +191,34 @@ mod test {
         // test a case with no matches
         let expected = ("|BCD", vec![]);
         let actual = many_a.parse("|BCD").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn one_plus() {
+        let msg = "should ";
+
+        let digits = one_or_more(parse_digit());
+
+        let expected = ("ABC", vec!['1']);
+        let actual = digits.parse("1ABC").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("BC", vec!['1', '2']);
+        let actual = digits.parse("12BC").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("C", vec!['1', '2', '3']);
+        let actual = digits.parse("123C").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("", vec!['1', '2', '3', '4']);
+        let actual = digits.parse("1234").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        // failure case
+        let expected = "Expected '9', found 'A'".to_string();
+        let actual = digits.parse("ABC").unwrap_err();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
