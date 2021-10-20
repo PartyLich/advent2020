@@ -231,6 +231,14 @@ fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<
     both.map(|(a, _b)| a)
 }
 
+/// Keep only the result of the right side parser
+fn keep_second<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, U> {
+    // create a pair
+    let both = and_then(p1, p2);
+    // then only keep the second value
+    both.map(|(_a, b)| b)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
