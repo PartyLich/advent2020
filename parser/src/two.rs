@@ -239,6 +239,15 @@ pub fn keep_second<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Pa
     both.map(|(_a, b)| b)
 }
 
+/// Keep only the result of the middle parser
+pub fn between<'a, T: 'a, U: 'a, V: 'a>(
+    p1: Parser<'a, T>,
+    p2: Parser<'a, U>,
+    p3: Parser<'a, V>,
+) -> Parser<'a, U> {
+    keep_first(keep_second(p1, p2), p3)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -366,6 +375,18 @@ mod test {
         assert_eq!(actual, expected, "{}", msg);
 
         let actual = digit_then_semicolon.parse("1").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn inbetween() {
+        let msg = "should keep the results of the middle parser";
+
+        let double_quote = p_char('"');
+        let quoted_integer = between(double_quote.clone(), parse_int(), double_quote);
+
+        let expected = ("", 1234);
+        let actual = quoted_integer.parse("\"1234\"").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
