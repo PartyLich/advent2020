@@ -10,6 +10,12 @@ pub struct Parser<'a, T> {
     parse: Rc<ParseFn<'a, T>>,
 }
 
+impl<T> std::fmt::Debug for Parser<'_, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Parser").finish()
+    }
+}
+
 impl<'a, T: 'a> Parser<'a, T> {
     /// Run a parser with some input
     pub fn parse(&self, input: &'a str) -> Result<(&'a str, T), String> {
