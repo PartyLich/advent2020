@@ -9,4 +9,12 @@ pub fn one(file_path: &str) -> usize {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn part_one() {
+        let msg = "should count the number of messages that match rule 0";
+        let expected = 2;
+        let actual = one("input/19-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
 }
