@@ -11,9 +11,14 @@ fn parse_rules<'a>(rule_strs: &str) -> Result<Vec<Rule<'a>>, String> {
     todo!();
 }
 
-fn meets_rule(rule: &Rule) -> impl Fn(&str) -> Option<&str> {
-    |message| {
-        todo!()
+/// return Some if the message meets the Rule, None otherwise
+fn meets_rule<'a>(rule: Rule<'a>) -> impl Fn(&'a str) -> Option<&str> {
+    move |message| {
+        let (remaining, _result) = rule.parse(message).ok()?;
+        if !remaining.is_empty() {
+            return None;
+        }
+        Some(message)
     }
 }
 
@@ -24,7 +29,7 @@ pub fn one(file_path: &str) -> usize {
     let rules = parse_rules(rules_str).expect("Unable to parse rules");
     messages_str
         .lines()
-        .filter_map(meets_rule(&rules[0]))
+        .filter_map(meets_rule(rules[0].clone()))
         .count()
 }
 
