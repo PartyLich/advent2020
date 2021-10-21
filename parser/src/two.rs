@@ -285,6 +285,28 @@ pub fn between<'a, T: 'a, U: 'a, V: 'a>(
     keep_first(keep_second(p1, p2), p3)
 }
 
+// 2-7. Parsing lists with separators
+/// Parses one or more occurrences of parser separated by separator
+pub fn sep_by_one<'a, T: 'a, U: 'a>(
+    parser: Parser<'a, T>,
+    separator: Parser<'a, U>,
+) -> Parser<'a, Vec<T>> {
+    let sep_then_p = keep_second(separator, parser.clone());
+    and_then(parser, many(sep_then_p)).map(|(first, mut rest)| {
+        // prepend
+        rest.splice(0..0, [first]);
+        rest
+    })
+}
+
+/// Parses zero or more occurrences of parser separated by separator
+pub fn sep_by<'a, T: 'a + Clone, U: 'a>(
+    parser: Parser<'a, T>,
+    separator: Parser<'a, U>,
+) -> Parser<'a, Vec<T>> {
+    or_else(sep_by_one(parser, separator), Parser::of(vec![]))
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -462,6 +484,32 @@ mod test {
 
         let expected = ("", 1234);
         let actual = quoted_integer.parse("\"1234\"").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn separators() {
+        let msg = "should parse separated values";
+
+        let digit = parse_digit();
+        let comma = p_char(',');
+        let zero_or_more_digit_list = sep_by(digit.clone(), comma.clone());
+        let one_or_more_digit_list = sep_by_one(digit, comma);
+
+        let expected = (";", vec!['1']);
+        let actual = one_or_more_digit_list.parse("1;").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = (";", vec!['1', '2', '3']);
+        let actual = one_or_more_digit_list.parse("1,2,3;").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = (";", vec!['1', '2', '3']);
+        let actual = zero_or_more_digit_list.parse("1,2,3;").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("Z;", vec![]);
+        let actual = zero_or_more_digit_list.parse("Z;").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
