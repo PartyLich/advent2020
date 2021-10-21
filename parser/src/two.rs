@@ -107,6 +107,22 @@ where
     }
 }
 
+/// apply the function contents of one functor to the value contents of another functor
+fn apply<'a, A: 'a, B: 'a>(
+    f: Parser<'a, Rc<impl Fn(A) -> B + 'a + ?Sized>>,
+    x: Parser<'a, A>,
+) -> Parser<'a, B> {
+    let fx = and_then(f, x);
+    fx.map(|(f, x)| f(x))
+}
+
+impl<'a, A: 'a, B: 'a> Parser<'a, Rc<dyn Fn(A) -> B + 'a>> {
+    /// apply a wrapped function to a wrapped value
+    pub fn apply(&self, x: Parser<'a, A>) -> Parser<'a, B> {
+        apply(self.clone(), x)
+    }
+}
+
 // 2-4. Matching a parser multiple times
 
 impl<T> Clone for Parser<'_, T> {
