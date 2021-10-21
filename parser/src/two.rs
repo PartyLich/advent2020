@@ -123,6 +123,20 @@ impl<'a, A: 'a, B: 'a> Parser<'a, Rc<dyn Fn(A) -> B + 'a>> {
     }
 }
 
+// 2-3. Turning a list of Parsers into a single Parser
+/// Convert a list of Parsers into a Parser of a list
+pub fn sequence<'a, T: 'a>(list: &[Parser<'a, T>]) -> Parser<'a, Vec<T>>
+where
+    T: Clone,
+{
+    list.iter().cloned().fold(Parser::of(vec![]), |acc, next| {
+        and_then(acc, next).map(|(mut a, b)| {
+            a.push(b);
+            a
+        })
+    })
+}
+
 // 2-4. Matching a parser multiple times
 
 impl<T> Clone for Parser<'_, T> {
@@ -267,6 +281,18 @@ pub fn between<'a, T: 'a, U: 'a, V: 'a>(
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn sequences() {
+        let msg = "should sequence a list of parsers";
+
+        let parsers = vec![p_char('A'), p_char('B'), p_char('C')];
+        let combined = sequence(&parsers);
+
+        let expected = ("D", vec!['A', 'B', 'C']);
+        let actual = combined.parse("ABCD").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
 
     #[test]
     fn many_matches() {
