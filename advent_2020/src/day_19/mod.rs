@@ -7,6 +7,9 @@ use parser::{
 
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 type Rule<'a> = Parser<'a, String>;
 
 /// split block of rule strings into sorted list of (index, rule) pairs
