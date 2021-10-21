@@ -1,9 +1,31 @@
 //! Solutions to 2020 day 19 problems
 //! --- Day 19: Monster Messages ---
+use parser::Parser;
+
+use crate::day_1::read_file;
+
+type Rule<'a> = Parser<'a, String>;
+
+
+fn parse_rules<'a>(rule_strs: &str) -> Result<Vec<Rule<'a>>, String> {
+    todo!();
+}
+
+fn meets_rule(rule: &Rule) -> impl Fn(&str) -> Option<&str> {
+    |message| {
+        todo!()
+    }
+}
 
 /// return the count of messages that match rule 0
 pub fn one(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let (rules_str, messages_str) = input.split_once("\n\n").expect("Unable to parse input");
+    let rules = parse_rules(rules_str).expect("Unable to parse rules");
+    messages_str
+        .lines()
+        .filter_map(meets_rule(&rules[0]))
+        .count()
 }
 
 #[cfg(test)]
