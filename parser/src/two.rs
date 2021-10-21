@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 type ParseFn<'a, T> = dyn Fn(&'a str) -> Result<(&'a str, T), String> + 'a;
 
-struct Parser<'a, T> {
+pub struct Parser<'a, T> {
     parse: Rc<ParseFn<'a, T>>,
 }
 
@@ -17,7 +17,7 @@ impl<'a, T: 'a> Parser<'a, T> {
 }
 
 /// Parse a single character
-fn p_char<'a>(char_to_match: char) -> Parser<'a, char> {
+pub fn p_char<'a>(char_to_match: char) -> Parser<'a, char> {
     Parser {
         parse: Rc::new(move |input: &str| {
             let first = input
@@ -34,7 +34,7 @@ fn p_char<'a>(char_to_match: char) -> Parser<'a, char> {
 }
 
 /// Combine two parsers as "A andThen B"
-fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, (T, U)> {
+pub fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, (T, U)> {
     Parser {
         parse: Rc::new(move |input: &str| {
             let (remaining, result1) = p1.parse(input)?;
@@ -46,14 +46,14 @@ fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a
 }
 
 /// Combine two parsers as "A orElse B"
-fn or_else<'a, T: 'a>(p1: Parser<'a, T>, p2: Parser<'a, T>) -> Parser<'a, T> {
+pub fn or_else<'a, T: 'a>(p1: Parser<'a, T>, p2: Parser<'a, T>) -> Parser<'a, T> {
     Parser {
         parse: Rc::new(move |input: &str| p1.parse(input).or_else(|_| p2.parse(input))),
     }
 }
 
 /// Choose any of a list of parsers
-fn choice<'a, T: 'a>(parsers: impl IntoIterator<Item = Parser<'a, T>>) -> Parser<'a, T> {
+pub fn choice<'a, T: 'a>(parsers: impl IntoIterator<Item = Parser<'a, T>>) -> Parser<'a, T> {
     parsers.into_iter().reduce(or_else).unwrap()
 }
 
@@ -63,11 +63,11 @@ fn any_of<'a>(char_list: impl IntoIterator<Item = char>) -> Parser<'a, char> {
     choice(parsers)
 }
 
-fn parse_lowercase<'a>() -> Parser<'a, char> {
+pub fn parse_lowercase<'a>() -> Parser<'a, char> {
     any_of('a'..='z')
 }
 
-fn parse_digit<'a>() -> Parser<'a, char> {
+pub fn parse_digit<'a>() -> Parser<'a, char> {
     any_of('0'..='9')
 }
 
@@ -142,14 +142,14 @@ fn zero_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
 }
 
 /// match zero or more occurrences of the specified parser
-fn many<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+pub fn many<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
     Parser {
         parse: Rc::new(move |input: &str| zero_or_more(parser.clone()).parse(input)),
     }
 }
 
 /// match one or more occurrences of the specified parser
-fn one_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+pub fn one_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
     Parser {
         parse: Rc::new(move |input: &str| {
             // run parser with the input
@@ -167,7 +167,7 @@ fn one_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
 }
 
 /// parse an integer (without sign support)
-fn parse_int<'a>() -> Parser<'a, isize> {
+pub fn parse_int<'a>() -> Parser<'a, isize> {
     // helper
     fn result_to_int(digits: Vec<char>) -> isize {
         digits
@@ -190,7 +190,7 @@ fn parse_int<'a>() -> Parser<'a, isize> {
 // 2-5. Matching a parser zero or one time
 
 /// Parses an optional occurrence of p and returns an option value.
-fn optional<'a, T: 'a + Clone>(parser: Parser<'a, T>) -> Parser<'a, Option<T>> {
+pub fn optional<'a, T: 'a + Clone>(parser: Parser<'a, T>) -> Parser<'a, Option<T>> {
     let some = parser.map(Option::from);
     let none = Parser::of(None);
     or_else(some, none)
@@ -224,7 +224,7 @@ fn parse_int2<'a>() -> Parser<'a, isize> {
 
 // 2-6. Throwing results away
 /// Keep only the result of the left side parser
-fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, T> {
+pub fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, T> {
     // create a pair
     let both = and_then(p1, p2);
     // then only keep the first value
@@ -232,7 +232,7 @@ fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<
 }
 
 /// Keep only the result of the right side parser
-fn keep_second<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, U> {
+pub fn keep_second<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, U> {
     // create a pair
     let both = and_then(p1, p2);
     // then only keep the second value
