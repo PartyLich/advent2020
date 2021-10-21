@@ -5,15 +5,15 @@ use advent_2020::*;
 macro_rules! show {
     ($day: literal, $text: literal, $file: literal, $fn: path) => {
         let start = Instant::now();
-        let result = $fn(&format!("./input/{}.txt", $file));
+        let result = $fn(&format!("./advent_2020/input/{}.txt", $file));
         let dur = start.elapsed();
         println!("Day {}:\n\t{}: {} ({:?})", $day, $text, result, dur,);
     };
 }
 
 fn main() {
-    day_1::one("./input/1-1.txt");
-    day_1::two("./input/1-1.txt");
+    day_1::one("./advent_2020/input/1-1.txt");
+    day_1::two("./advent_2020/input/1-1.txt");
     show!("2-1", "Valid passwords", "2-1", day_2::one);
     show!("2-2", "Valid passwords", "2-1", day_2::two);
     show!("3-1", "Trees encountered", "3-1", day_3::one);
