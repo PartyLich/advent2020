@@ -1,6 +1,7 @@
 //! Understanding Parser Combinators - pt 2
 //!
 //! [Building a useful set of parser combinators](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators-2/)
+use std::iter::FromIterator;
 use std::rc::Rc;
 
 type ParseFn<'a, T> = dyn Fn(&'a str) -> Result<(&'a str, T), String> + 'a;
@@ -135,6 +136,12 @@ where
             a
         })
     })
+}
+
+/// match a specific string
+pub fn p_string<'a>(string: &str) -> Parser<'a, String> {
+    let parsers = string.chars().map(p_char).collect::<Vec<_>>();
+    sequence(&parsers).map(String::from_iter)
 }
 
 // 2-4. Matching a parser multiple times
@@ -295,6 +302,21 @@ mod test {
     }
 
     #[test]
+    fn strings() {
+        let msg = "should parse a string";
+
+        let parse_abc = p_string("ABC");
+
+        let expected = ("DE", "ABC".to_string());
+        let actual = parse_abc.parse("ABCDE").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = "Expected 'C', found '|'".to_string();
+        let actual = parse_abc.parse("AB|DE").unwrap_err();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
     fn many_matches() {
         let msg = "should ";
 
@@ -417,6 +439,17 @@ mod test {
         assert_eq!(actual, expected, "{}", msg);
 
         let actual = digit_then_semicolon.parse("1").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let whitespace_char = any_of([' ', '\t', '\n']);
+        let whitespace = one_or_more(whitespace_char);
+
+        let ab = p_string("AB");
+        let cd = p_string("CD");
+        let ab_cd = and_then(keep_first(ab, whitespace), cd);
+
+        let expected = ("", ("AB".to_string(), "CD".to_string()));
+        let actual = ab_cd.parse("AB \t\nCD").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 
