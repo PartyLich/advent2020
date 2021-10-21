@@ -49,4 +49,5 @@ fn main() {
     show!("18-1", "Sum of expressions", "18-1", day_18::one);
     show!("18-2", "Sum of expressions", "18-1", day_18::two);
     show!("19-1", "Messages that match rule 0", "19-1", day_19::one);
+    show!("19-2", "Messages that match rule 0", "19-1", day_19::two);
 }
