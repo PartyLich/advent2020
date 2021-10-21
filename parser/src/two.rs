@@ -265,6 +265,38 @@ fn parse_int2<'a>() -> Parser<'a, isize> {
     int.map(result_to_int)
 }
 
+/// parse a number
+pub fn parse_number<'a, T: 'a>() -> Parser<'a, T>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
+{
+    // helper
+    fn result_to_num<T>((sign, mut digits): (Option<char>, Vec<char>)) -> T
+    where
+        T: std::str::FromStr,
+        <T as std::str::FromStr>::Err: std::fmt::Debug,
+    {
+        match sign {
+            Some(s) => digits
+                .splice(0..0, [s])
+                .collect::<String>()
+                .parse::<T>()
+                .unwrap(),
+            None => digits.iter().collect::<String>().parse::<T>().unwrap(),
+        }
+    }
+
+    // define parser for one digit
+    let digit = parse_digit();
+    // define parser for one or more digits
+    let digits = one_or_more(digit);
+
+    // map the digits to an int
+    let num = and_then(optional(p_char('-')), digits);
+    num.map(result_to_num)
+}
+
 // 2-6. Throwing results away
 /// Keep only the result of the left side parser
 pub fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, T> {
