@@ -1,11 +1,13 @@
 //! Solutions to 2020 day 19 problems
 //! --- Day 19: Monster Messages ---
-use parser::Parser;
+use parser::{
+    and_then, between, keep_first, keep_second, one_or_more, optional, p_char, parse_lowercase,
+    parse_number, Parser,
+};
 
 use crate::day_1::read_file;
 
 type Rule<'a> = Parser<'a, String>;
-
 
 fn parse_rules<'a>(rule_strs: &str) -> Result<Vec<Rule<'a>>, String> {
     todo!();
@@ -36,6 +38,40 @@ pub fn one(file_path: &str) -> usize {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn parsers() {
+        let msg = "should parse rule patterns";
+
+        let space = p_char(' ');
+        let integer = parse_number::<usize>();
+        let index = keep_first(integer, optional(space.clone()));
+        let index_set = one_or_more(index);
+
+        let double_quote = p_char('"');
+        let quoted_char = between(double_quote.clone(), parse_lowercase(), double_quote);
+
+        let expected = ("", 'a');
+        let actual = quoted_char.parse("\"a\"").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("", vec![4, 1, 25]);
+        let actual = index_set.parse("4 1 25").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = ("| 3 2", vec![30, 2]);
+        let actual = index_set.parse("30 2 | 3 2").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+
+        let alternate = keep_second(
+            optional(and_then(p_char('|'), space.clone())),
+            index_set.clone(),
+        );
+        let lookup_rule = and_then(index_set, optional(alternate));
+        let expected = ("", (vec![30, 2], Some(vec![3, 20])));
+        let actual = lookup_rule.parse("30 2 | 3 20").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
 
     #[test]
     fn part_one() {
