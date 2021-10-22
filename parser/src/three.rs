@@ -45,3 +45,15 @@ impl<I, O> Clone for Parser<'_, I, O> {
         }
     }
 }
+
+/// Print a ParseResult to std out
+pub fn print_result<I, O: std::fmt::Debug>(result: &ParseResult<I, O>) {
+    match result {
+        Ok((_remaining, value)) => {
+            println!("{:?}", value);
+        }
+        Err((label, error)) => {
+            println!("Error parsing {}\n\t{}", label, error);
+        }
+    }
+}
