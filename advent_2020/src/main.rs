@@ -1,11 +1,27 @@
+use std::path::PathBuf;
 use std::time::Instant;
 
 use advent_2020::*;
 
+#[cfg(debug_assertions)]
+fn get_root_dir() -> PathBuf {
+    env!("CARGO_MANIFEST_DIR").into()
+}
+
+#[cfg(not(debug_assertions))]
+pub fn get_root_dir() -> PathBuf {
+    if let Ok(mut exe_path) = std::env::current_exe() {
+        exe_path.pop();
+        exe_path
+    } else {
+        PathBuf::new()
+    }
+}
+
 macro_rules! show {
     ($day: literal, $text: literal, $file: literal, $fn: path) => {
         let start = Instant::now();
-        let result = $fn(&format!("./advent_2020/input/{}.txt", $file));
+        let result = $fn(&format!("{}/input/{}.txt", get_root_dir().display(), $file));
         let dur = start.elapsed();
         println!("Day {}:\n\t{}: {} ({:?})", $day, $text, result, dur,);
     };
