@@ -45,6 +45,19 @@ impl<'a, I: 'a, O: 'a> Parser<'a, I, O> {
     pub fn or_else(self, p2: Parser<'a, I, O>) -> Self {
         or_else(self, p2)
     }
+
+    /// apply a function to the value inside a parser
+    pub fn map<U>(self, f: impl Fn(O) -> U + 'a) -> Parser<'a, I, U> {
+        let Self { parse, label } = self;
+        Parser {
+            label,
+            parse: Rc::new(move |input: &[I]| {
+                let (remaining, result) = (parse)(input)?;
+                let mapped_value = f(result);
+                Ok((remaining, mapped_value))
+            }),
+        }
+    }
 }
 
 impl<I, O> Clone for Parser<'_, I, O> {
