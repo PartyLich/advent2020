@@ -91,3 +91,10 @@ pub fn or_else<'a, I: 'a, O: 'a>(p1: Parser<'a, I, O>, p2: Parser<'a, I, O>) -> 
         parse: Rc::new(move |input: &[I]| p1.parse(input).or_else(|_| p2.parse(input))),
     }
 }
+
+/// Choose any of a list of parsers
+pub fn choice<'a, I: 'a, O: 'a>(
+    parsers: impl IntoIterator<Item = Parser<'a, I, O>>,
+) -> Parser<'a, I, O> {
+    parsers.into_iter().reduce(or_else).unwrap()
+}
