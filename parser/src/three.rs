@@ -40,6 +40,11 @@ impl<'a, I: 'a, O: 'a> Parser<'a, I, O> {
     pub fn and_then<U: 'a>(self, p2: Parser<'a, I, U>) -> Parser<'a, I, (O, U)> {
         and_then(self, p2)
     }
+
+    /// return a parser that combines this parser or else other parser
+    pub fn or_else(self, p2: Parser<'a, I, O>) -> Self {
+        or_else(self, p2)
+    }
 }
 
 impl<I, O> Clone for Parser<'_, I, O> {
@@ -76,5 +81,13 @@ pub fn and_then<'a, I: 'a, T: 'a, U: 'a>(
             let new_value = (result1, result2);
             Ok((remaining, new_value))
         }),
+    }
+}
+
+/// Combine two parsers as "A orElse B"
+pub fn or_else<'a, I: 'a, O: 'a>(p1: Parser<'a, I, O>, p2: Parser<'a, I, O>) -> Parser<'a, I, O> {
+    Parser {
+        label: format!("{} or else {}", p1.label, p2.label),
+        parse: Rc::new(move |input: &[I]| p1.parse(input).or_else(|_| p2.parse(input))),
     }
 }
