@@ -4,6 +4,7 @@
 //! Rust for...understanding
 //! (un)Organized in the same sequence presented in the articles
 mod one;
+pub mod three;
 mod two;
 
 pub use two::*;
