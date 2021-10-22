@@ -152,3 +152,16 @@ pub fn p_char<'a>(char_to_match: char) -> Parser<'a, char, char> {
     let label = format!("{}", char_to_match);
     satisfy(predicate, label)
 }
+
+/// Choose any of a list of characters
+pub fn any_of<'a, I>(char_list: I) -> Parser<'a, char, char>
+where
+    I: IntoIterator<Item = char> + std::fmt::Debug,
+{
+    let label = format!("any of {:?}", char_list);
+    let parsers = char_list.into_iter().map(p_char).collect::<Vec<_>>();
+    let mut p = choice(parsers);
+    p.label = label;
+
+    p
+}
