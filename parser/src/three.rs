@@ -145,3 +145,10 @@ where
         }),
     }
 }
+
+/// Parse a single character
+pub fn p_char<'a>(char_to_match: char) -> Parser<'a, char, char> {
+    let predicate = move |ch: &char| *ch == char_to_match;
+    let label = format!("{}", char_to_match);
+    satisfy(predicate, label)
+}
