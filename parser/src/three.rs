@@ -165,3 +165,11 @@ where
 
     p
 }
+
+/// parse a single digit
+pub fn parse_digit<'a>(base: u32) -> Parser<'a, char, char> {
+    // any_of('0'..='9')
+    let predicate = move |ch: &char| ch.is_digit(base);
+    let label = "digit".to_string();
+    satisfy(predicate, label)
+}
