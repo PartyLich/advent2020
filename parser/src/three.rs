@@ -173,3 +173,10 @@ pub fn parse_digit<'a>(base: u32) -> Parser<'a, char, char> {
     let label = "digit".to_string();
     satisfy(predicate, label)
 }
+
+/// parse a single whitespace character
+pub fn whitespace_char<'a>() -> Parser<'a, char, char> {
+    let predicate = |ch: &char| ch.is_whitespace();
+    let label = "whitespace".to_string();
+    satisfy(predicate, label)
+}
