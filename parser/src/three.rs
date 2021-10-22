@@ -35,6 +35,11 @@ impl<'a, I: 'a, O: 'a> Parser<'a, I, O> {
     pub fn parse(&self, input: &'a [I]) -> ParseResult<'a, I, O> {
         (self.parse)(input)
     }
+
+    /// return a parser that combines this parser and then other parser
+    pub fn and_then<U: 'a>(self, p2: Parser<'a, I, U>) -> Parser<'a, I, (O, U)> {
+        and_then(self, p2)
+    }
 }
 
 impl<I, O> Clone for Parser<'_, I, O> {
@@ -55,5 +60,21 @@ pub fn print_result<I, O: std::fmt::Debug>(result: &ParseResult<I, O>) {
         Err((label, error)) => {
             println!("Error parsing {}\n\t{}", label, error);
         }
+    }
+}
+
+/// Combine two parsers as "A andThen B"
+pub fn and_then<'a, I: 'a, T: 'a, U: 'a>(
+    p1: Parser<'a, I, T>,
+    p2: Parser<'a, I, U>,
+) -> Parser<'a, I, (T, U)> {
+    Parser {
+        label: format!("{} and then {}", p1.label, p2.label),
+        parse: Rc::new(move |input: &'a [I]| {
+            let (remaining, result1) = p1.parse(input)?;
+            let (remaining, result2) = p2.parse(remaining)?;
+            let new_value = (result1, result2);
+            Ok((remaining, new_value))
+        }),
     }
 }
