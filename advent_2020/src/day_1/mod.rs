@@ -32,10 +32,10 @@ pub fn one(file_path: &str) -> i32 {
         match expenses[s] + expenses[e] {
             sum if sum == TARGET => {
                 product = expenses[s] * expenses[e];
-                println!(
-                    "day 1-1\n\ta: {}\n\tb: {}\n\tproduct: {}",
-                    expenses[s], expenses[e], product
-                );
+                // println!(
+                //     "day 1-1\n\ta: {}\n\tb: {}\n\tproduct: {}",
+                //     expenses[s], expenses[e], product
+                // );
                 break;
             }
             sum if sum > TARGET => {
@@ -68,10 +68,10 @@ pub fn two(file_path: &str) -> i32 {
         match expenses[ind.0] + expenses[ind.1] + expenses[ind.2] {
             sum if sum == TARGET => {
                 let product = expenses[ind.0] * expenses[ind.1] * expenses[ind.2];
-                println!(
-                    "day 1-2\n\ta: {}\n\tb: {}\n\tc: {}\n\tproduct: {}",
-                    expenses[ind.0], expenses[ind.1], expenses[ind.2], product
-                );
+                // println!(
+                //     "day 1-2\n\ta: {}\n\tb: {}\n\tc: {}\n\tproduct: {}",
+                //     expenses[ind.0], expenses[ind.1], expenses[ind.2], product
+                // );
                 break product;
             }
             sum if sum > TARGET => {

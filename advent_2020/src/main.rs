@@ -20,16 +20,17 @@ pub fn get_root_dir() -> PathBuf {
 
 macro_rules! show {
     ($day: literal, $text: literal, $file: literal, $fn: path) => {
+        let input_path = format!("{}/input/{}.txt", get_root_dir().display(), $file);
         let start = Instant::now();
-        let result = $fn(&format!("{}/input/{}.txt", get_root_dir().display(), $file));
+        let result = $fn(&input_path);
         let dur = start.elapsed();
         println!("Day {}:\n\t{}: {} ({:?})", $day, $text, result, dur,);
     };
 }
 
 fn main() {
-    day_1::one("./advent_2020/input/1-1.txt");
-    day_1::two("./advent_2020/input/1-1.txt");
+    show!("1-1", "Product", "1-1", day_1::one);
+    show!("1-2", "Product", "1-1", day_1::two);
     show!("2-1", "Valid passwords", "2-1", day_2::one);
     show!("2-2", "Valid passwords", "2-1", day_2::two);
     show!("3-1", "Trees encountered", "3-1", day_3::one);
