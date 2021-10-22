@@ -58,6 +58,17 @@ impl<'a, I: 'a, O: 'a> Parser<'a, I, O> {
             }),
         }
     }
+
+    /// Update the label in the parser
+    pub fn with_label(self, label: String) -> Self {
+        let Self { parse, label: _ } = self;
+        Parser {
+            label: label.clone(),
+            parse: Rc::new(move |input: &[I]| {
+                (parse)(input).map_err(|(_, err)| (label.clone(), err))
+            }),
+        }
+    }
 }
 
 impl<I, O> Clone for Parser<'_, I, O> {
