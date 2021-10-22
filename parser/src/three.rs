@@ -122,3 +122,26 @@ pub fn choice<'a, I: 'a, O: 'a>(
 ) -> Parser<'a, I, O> {
     parsers.into_iter().reduce(or_else).unwrap()
 }
+
+// 3-2. Replacing “pchar” with “satisfy”
+
+/// Match an input token if the predicate is satisfied
+pub fn satisfy<'a, I>(predicate: impl Fn(&I) -> bool + 'a, label: String) -> Parser<'a, I, I>
+where
+    I: std::fmt::Debug + Copy,
+{
+    Parser {
+        label: label.clone(),
+        parse: Rc::new(move |input: &[I]| {
+            let first = input
+                .iter()
+                .next()
+                .ok_or_else(|| (label.clone(), "No more input".to_string()))?;
+            if !predicate(first) {
+                return Err((label.clone(), format!("Unexpected {:?}", first)));
+            }
+
+            Ok((&input[1..], *first))
+        }),
+    }
+}
