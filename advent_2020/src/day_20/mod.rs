@@ -2,6 +2,9 @@
 //! --- Day 20: Jurassic Jigsaw ---
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 type TileId = usize;
 // borders
 type Tile = [Vec<char>; 4];
