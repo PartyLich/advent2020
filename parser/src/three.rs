@@ -180,3 +180,26 @@ pub fn whitespace_char<'a>() -> Parser<'a, char, char> {
     let label = "whitespace".to_string();
     satisfy(predicate, label)
 }
+
+fn of<'a, I, O: 'a>(value: O) -> Parser<'a, I, O>
+where
+    O: Clone,
+{
+    Parser {
+        label: "unlabeled".to_string(),
+        parse: Rc::new(move |input: &[I]| {
+            // ignore the input and return value
+            Ok((input, value.clone()))
+        }),
+    }
+}
+
+// more idiomatic than `of` in Rust
+impl<'a, I, O: 'a> From<O> for Parser<'a, I, O>
+where
+    O: Clone,
+{
+    fn from(value: O) -> Self {
+        of(value)
+    }
+}
