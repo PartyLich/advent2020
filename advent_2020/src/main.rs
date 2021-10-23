@@ -67,4 +67,5 @@ fn main() {
     show!("18-2", "Sum of expressions", "18-1", day_18::two);
     show!("19-1", "Messages that match rule 0", "19-1", day_19::one);
     show!("19-2", "Messages that match rule 0", "19-1", day_19::two);
+    show!("20-1", "Product of corner tile IDs", "20-1", day_20::one);
 }

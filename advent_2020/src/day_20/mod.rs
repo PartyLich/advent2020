@@ -1,5 +1,6 @@
 //! Solutions to 2020 day 20
 //! --- Day 20: Jurassic Jigsaw ---
+use crate::day_1::read_file;
 
 type TileId = usize;
 // borders
@@ -38,9 +39,56 @@ fn compare(a: &[char], b: &[char]) -> bool {
         a.iter().zip(b.iter().rev()).all(|(a, b)| a.eq(b))
 }
 
+/// return Some(TileId) if the tile has a neighbor count in the supplied range, None otherwise
+fn count_neighbors(
+    tiles: &[(TileId, Tile)],
+    min: usize,
+    max: usize,
+) -> impl Fn(&(TileId, Tile)) -> Option<usize> + '_ {
+    move |(id, borders)| {
+        let mut count = 0;
+
+        for border in borders {
+            // n - 1 other tiles
+            for (other_id, other_borders) in tiles {
+                if id == other_id {
+                    continue;
+                }
+
+                // 4 sides
+                for other in other_borders {
+                    if compare(border, other) {
+                        count += 1;
+                        // exit early if we've exceeded bounds
+                        if count > max {
+                            return None;
+                        }
+                    }
+                }
+            }
+        }
+
+        if count < min {
+            None
+        } else {
+            Some(*id)
+        }
+    }
+}
+
 /// returns the product of the four corner tile ids
 pub fn one(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let tiles: Vec<_> = input
+        .trim()
+        .split("\n\n")
+        .map(parse_tile)
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    tiles
+        .iter()
+        .filter_map(count_neighbors(&tiles, 2, 2))
+        .product()
 }
 
 #[cfg(test)]
