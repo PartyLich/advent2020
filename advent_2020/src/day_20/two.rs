@@ -3,6 +3,8 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
+use regex::Regex;
+
 use crate::day_1::read_file;
 
 type TileId = usize;
@@ -353,8 +355,111 @@ fn assemble(tile_map: &mut HashMap<TileId, Tile>, top_left: OrientedTile) -> Ima
     result
 }
 
+fn monster_indexes(row_offset: usize, col_offset: usize) -> Vec<(usize, usize)> {
+    r#"                  #
+#    ##    ##    ###
+ #  #  #  #  #  #"#
+        .lines()
+        .enumerate()
+        .flat_map(|(row, line)| {
+            line.char_indices()
+                .filter_map(|(col, ch)| {
+                    if ch == '#' {
+                        Some((row + row_offset, col + col_offset))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<(usize, usize)>>()
+        })
+        .collect()
+}
+
+/// returns an image oriented with monsters located, and a list of all indexes that contain part of
+/// a monster
 fn find_monsters(image: &[Vec<char>]) -> (String, Vec<(usize, usize)>) {
-    todo!()
+    const MONSTER_WIDTH: usize = 20;
+    let monster_re: Regex =
+        Regex::new("(.{18}#).\n(#.{4}(?:#{2}.{4}){2}#{3})\n(.#(?:.{2}#){5})").unwrap();
+
+    fn halp(monster_re: &Regex, image: &[Vec<char>]) -> Option<(String, Vec<(usize, usize)>)> {
+        let mut result = vec![];
+        let len = image.len();
+
+        // check every flip variation
+        for v_flip in 0..=1 {
+            let v_flip = v_flip != 0;
+            for h_flip in 0..=1 {
+                let h_flip = h_flip != 0;
+
+                // check every 3 x MONSTER_WIDTH block
+                for row in 0..(len - 2) {
+                    let mut col = 0;
+                    while col < (len - MONSTER_WIDTH) {
+                        let mut f;
+                        let mut r;
+                        let image_iter: &mut dyn Iterator<Item = &Vec<char>> = if v_flip {
+                            r = image[row..(row + 3)].iter().rev();
+                            &mut r
+                        } else {
+                            f = image[row..(row + 3)].iter();
+                            &mut f
+                        };
+
+                        let img_str = image_iter
+                            .map(|line| {
+                                if h_flip {
+                                    line.iter().rev().skip(col).take(20).collect()
+                                } else {
+                                    line.iter().skip(col).take(20).collect()
+                                }
+                            })
+                            .collect::<Vec<String>>()
+                            .join("\n");
+
+                        if monster_re.is_match(&img_str) {
+                            result.extend(monster_indexes(row, col));
+                            col += 20;
+                            continue;
+                        }
+
+                        col += 1;
+                    }
+                }
+
+                if !result.is_empty() {
+                    let mut f;
+                    let mut r;
+                    let image_iter: &mut dyn Iterator<Item = &Vec<char>> = if v_flip {
+                        r = image.iter().rev();
+                        &mut r
+                    } else {
+                        f = image.iter();
+                        &mut f
+                    };
+                    let img_str = image_iter
+                        .map(|line| {
+                            if h_flip {
+                                line.iter().rev().collect()
+                            } else {
+                                line.iter().collect()
+                            }
+                        })
+                        .collect::<Vec<String>>()
+                        .join("\n");
+                    return Some((img_str, result));
+                }
+            }
+        }
+
+        None
+    }
+
+    halp(&monster_re, image).unwrap_or_else(|| {
+        // rotate
+        let img_rot = rotate_grid(image.to_vec(), 1);
+        halp(&monster_re, &img_rot).unwrap()
+    })
 }
 
 /// returns count of '#' chars that are not part of a sea monster
