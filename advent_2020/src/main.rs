@@ -68,4 +68,5 @@ fn main() {
     show!("19-1", "Messages that match rule 0", "19-1", day_19::one);
     show!("19-2", "Messages that match rule 0", "19-1", day_19::two);
     show!("20-1", "Product of corner tile IDs", "20-1", day_20::one);
+    show!("20-2", "Water roughness", "20-1", day_20::two);
 }
