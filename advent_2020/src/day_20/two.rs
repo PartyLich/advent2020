@@ -201,8 +201,42 @@ fn get_side(
     todo!()
 }
 
+/// rotate a grid (2d vec) clockwise `units` times
 fn rotate_grid<T: Clone>(grid: Vec<Vec<T>>, units: usize) -> Vec<Vec<T>> {
-    todo!()
+    match units % 4 {
+        1 => {
+            let mut result = vec![];
+            for c in 0..grid[0].len() {
+                let mut row = vec![];
+                for line in grid.iter().rev() {
+                    let cell = line[c].clone();
+                    row.push(cell);
+                }
+                result.push(row);
+            }
+
+            result
+        }
+        2 => grid
+            .into_iter()
+            .rev()
+            .map(|row| row.into_iter().rev().collect())
+            .collect(),
+        3 => {
+            let mut result = vec![];
+            for c in (0..grid[0].len()).rev() {
+                let mut row = vec![];
+                for line in grid.iter() {
+                    let cell = line[c].clone();
+                    row.push(cell);
+                }
+                result.push(row);
+            }
+
+            result
+        }
+        _ => grid,
+    }
 }
 
 fn next_orient(
@@ -326,6 +360,34 @@ pub fn two(file_path: &str) -> usize {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn rotates_grid() {
+        let grid = vec![vec!['a', 'b'], vec!['c', 'd']];
+        let expected = vec![vec!['c', 'a'], vec!['d', 'b']];
+        let actual = rotate_grid(grid, 1);
+        assert_eq!(actual, expected);
+
+        let grid = vec![vec!['a', 'b'], vec!['c', 'd']];
+        let expected = vec![vec!['d', 'c'], vec!['b', 'a']];
+        let actual = rotate_grid(grid, 2);
+        assert_eq!(actual, expected);
+
+        let grid = vec![vec!['a', 'b'], vec!['c', 'd']];
+        let expected = vec![vec!['b', 'd'], vec!['a', 'c']];
+        let actual = rotate_grid(grid, 3);
+        assert_eq!(actual, expected);
+
+        let grid = vec![vec!['a', 'b'], vec!['c', 'd']];
+        let expected = vec![vec!['a', 'b'], vec!['c', 'd']];
+        let actual = rotate_grid(grid, 0);
+        assert_eq!(actual, expected);
+
+        let grid = vec![vec!['a', 'b'], vec!['c', 'd']];
+        let expected = vec![vec!['c', 'a'], vec!['d', 'b']];
+        let actual = rotate_grid(grid, 5);
+        assert_eq!(actual, expected);
+    }
 
     #[test]
     fn part_two() {
