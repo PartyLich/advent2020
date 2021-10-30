@@ -190,9 +190,27 @@ fn find_neighbors(mut tiles: Vec<Tile>) -> (Option<TileId>, HashMap<TileId, Tile
     (top_left, result)
 }
 
+fn get_row(
+    tile_map: &mut HashMap<TileId, Tile>,
+    top_left: OrientedTile,
+) -> (Option<OrientedTile>, Image) {
+    todo!()
+}
+
 /// assemble tiles into an image
 fn assemble(tile_map: &mut HashMap<TileId, Tile>, top_left: OrientedTile) -> Image {
-    todo!();
+    let mut result = vec![];
+
+    let (mut next, row) = get_row(tile_map, top_left);
+    result.extend(row);
+
+    while let Some(top_left) = next {
+        let (next_left, row) = get_row(tile_map, top_left);
+        next = next_left;
+        result.extend(row);
+    }
+
+    result
 }
 
 fn find_monsters(image: &[Vec<char>]) -> (String, Vec<(usize, usize)>) {
