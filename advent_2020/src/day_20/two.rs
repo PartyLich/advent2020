@@ -254,10 +254,24 @@ fn rotate_grid<T: Clone>(grid: Vec<Vec<T>>, units: usize) -> Vec<Vec<T>> {
 }
 
 fn next_orient(
-    (mut glob_vert, mut glob_horz, absolute_rotation): Orientation,
+    (mut glob_vert, mut glob_horz, global_rotation): Orientation,
     (mut vert, mut horz, rot): Orientation,
 ) -> Orientation {
-    todo!()
+    let is_even = |n| n % 2 == 0;
+
+    // swap global pair
+    if !is_even(rot) {
+        std::mem::swap(&mut glob_vert, &mut glob_horz);
+    }
+
+    // apply flips
+    horz ^= glob_horz;
+    vert ^= glob_vert;
+
+    // rotate global
+    let next_rotation = (global_rotation + rot) % 4;
+
+    (vert, horz, next_rotation)
 }
 
 /// return a complete row of tiles starting from the leftmost oriented tile
@@ -401,6 +415,84 @@ mod test {
         let expected = vec![vec!['c', 'a'], vec!['d', 'b']];
         let actual = rotate_grid(grid, 5);
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn orients() {
+        let msg = "should return next orientation";
+        let expected = (false, false, 0);
+        let actual = next_orient((false, false, 0), (false, false, 0));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 3769 -> 3931
+        let expected = (true, false, 1);
+        let actual = next_orient((false, false, 0), (true, false, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // test data -> 2473
+        let expected = (false, false, 1);
+        let actual = next_orient((false, false, 0), (false, false, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 1567 -> 1511
+        let expected = (false, false, 2);
+        let actual = next_orient((false, false, 1), (false, false, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 2473 -> 2557
+        let expected = (true, true, 2);
+        let actual = next_orient((false, true, 1), (false, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 1123 -> 1489
+        let expected = (false, true, 2);
+        let actual = next_orient((false, true, 1), (true, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 3907 -> 3167
+        let expected = (true, true, 2);
+        let actual = next_orient((false, true, 1), (false, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 2039 -> 1709
+        let expected = (false, true, 2);
+        let actual = next_orient((false, true, 1), (true, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 1709 -> 3779
+        let expected = (true, true, 2);
+        let actual = next_orient((false, true, 2), (true, false, 0));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 3697 -> 2311
+        let expected = (true, false, 1);
+        let actual = next_orient((true, false, 0), (true, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 2473 -> 2557
+        let expected = (false, true, 1);
+        let actual = next_orient((true, false, 1), (true, true, 0));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 3907 -> 3167
+        let expected = (false, false, 0);
+        let actual = next_orient((true, false, 3), (false, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 3037 -> 2957
+        let expected = (false, true, 1);
+        let actual = next_orient((true, false, 0), (false, false, 1));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 2179 -> 2473
+        let expected = (true, false, 1);
+        let actual = next_orient((true, false, 1), (false, false, 0));
+        assert_eq!(actual, expected, "{}", msg);
+
+        // 2953 -> 1069
+        let expected = (false, false, 1);
+        let actual = next_orient((true, true, 0), (true, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
     }
 
     #[test]
