@@ -64,8 +64,130 @@ impl FromStr for Tile {
     }
 }
 
+/// return true if two lists match
+fn compare(a: &[char], b: &[char]) -> bool {
+    a.iter().zip(b.iter()).all(|(a, b)| a.eq(b))
+}
+
+/// return true if two lists are mirrors of each other
+fn compare_flipped(a: &[char], b: &[char]) -> bool {
+    a.iter().zip(b.iter().rev()).all(|(a, b)| a.eq(b))
+}
+
+/// return top left TileId and a map of Tiles with their neighbor list filled
 fn find_neighbors(mut tiles: Vec<Tile>) -> (Option<TileId>, HashMap<TileId, Tile>) {
-    todo!()
+    let is_even = |n| n % 2 == 0;
+    let mut result = HashMap::new();
+    let mut top_left = None;
+    for _ in 0..tiles.len() {
+        let mut tile: Tile = tiles.pop().unwrap();
+        // 4 sides
+        for (idx, border) in tile.borders.iter().enumerate() {
+            if tile.neighbors[idx].is_some() {
+                continue;
+            }
+
+            let target_side = (idx + 2) % 4;
+
+            // n - 1 other tiles
+            for mut other in tiles.iter_mut() {
+                // 4 sides
+                for (other_idx, other_border) in other.borders.iter().enumerate() {
+                    let mut horz = false;
+                    let mut vert = false;
+                    let rotation = (target_side + 4 - other_idx) % 4;
+                    match rotation {
+                        1 => {
+                            if compare(border, other_border) {
+                                if is_even(other_idx) {
+                                    horz = true;
+                                } else {
+                                    vert = true;
+                                }
+
+                                tile.neighbors[idx] = Some((other.id, (vert, horz, rotation)));
+                                other.neighbors[other_idx] =
+                                    Some((tile.id, (vert, horz, rotation)));
+                                break;
+                            }
+                            if compare_flipped(border, other_border) {
+                                tile.neighbors[idx] = Some((other.id, (vert, horz, rotation)));
+                                other.neighbors[other_idx] =
+                                    Some((tile.id, (!vert, !horz, rotation)));
+                                break;
+                            }
+                        }
+                        3 => {
+                            if compare(border, other_border) {
+                                if is_even(other_idx) {
+                                    horz = true;
+                                } else {
+                                    vert = true;
+                                }
+
+                                tile.neighbors[idx] = Some((other.id, (!vert, !horz, 1)));
+                                other.neighbors[other_idx] = Some((tile.id, (horz, vert, 1)));
+                                break;
+                            }
+                            if compare_flipped(border, other_border) {
+                                tile.neighbors[idx] = Some((other.id, (!vert, !horz, 1)));
+                                other.neighbors[other_idx] = Some((tile.id, (horz, vert, 1)));
+                                break;
+                            }
+                        }
+                        2 => {
+                            if compare(border, other_border) {
+                                if is_even(other_idx) {
+                                    horz = true;
+                                } else {
+                                    vert = true;
+                                }
+
+                                tile.neighbors[idx] = Some((other.id, (!vert, !horz, 0)));
+                                other.neighbors[other_idx] = Some((tile.id, (!vert, !horz, 0)));
+                                break;
+                            }
+                            if compare_flipped(border, other_border) {
+                                tile.neighbors[idx] = Some((other.id, (!vert, !horz, 0)));
+                                other.neighbors[other_idx] = Some((tile.id, (!vert, !horz, 0)));
+                                break;
+                            }
+                        }
+                        // no rotation
+                        _ => {
+                            if compare(border, other_border) {
+                                if is_even(other_idx) {
+                                    horz = true;
+                                } else {
+                                    vert = true;
+                                }
+
+                                tile.neighbors[idx] = Some((other.id, (vert, horz, rotation)));
+                                other.neighbors[other_idx] =
+                                    Some((tile.id, (vert, horz, rotation)));
+                                break;
+                            }
+                            if compare_flipped(border, other_border) {
+                                tile.neighbors[idx] = Some((other.id, (vert, horz, rotation)));
+                                other.neighbors[other_idx] =
+                                    Some((tile.id, (vert, horz, rotation)));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if tile.neighbors[0].is_none() && tile.neighbors[3].is_none() {
+            // top left corner
+            top_left = Some(tile.id);
+        }
+
+        result.insert(tile.id, tile);
+    }
+
+    (top_left, result)
 }
 
 /// assemble tiles into an image
