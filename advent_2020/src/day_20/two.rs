@@ -1,6 +1,9 @@
 //! Solutions to 2020 day 20 part 2
 //! --- Day 20: Jurassic Jigsaw ---
+use std::collections::HashMap;
 use std::str::FromStr;
+
+use crate::day_1::read_file;
 
 type TileId = usize;
 type Borders = [Vec<char>; 4];
@@ -61,9 +64,45 @@ impl FromStr for Tile {
     }
 }
 
+fn find_neighbors(mut tiles: Vec<Tile>) -> (Option<TileId>, HashMap<TileId, Tile>) {
+    todo!()
+}
+
+/// assemble tiles into an image
+fn assemble(tile_map: &mut HashMap<TileId, Tile>, top_left: OrientedTile) -> Image {
+    todo!();
+}
+
+fn find_monsters(image: &[Vec<char>]) -> (String, Vec<(usize, usize)>) {
+    todo!()
+}
+
 /// returns count of '#' chars that are not part of a sea monster
 pub fn two(file_path: &str) -> usize {
-    todo!()
+    let input = read_file(file_path);
+    let tiles: Vec<_> = input
+        .trim()
+        .split("\n\n")
+        .map(Tile::from_str)
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+
+    let (top_left, mut tiles) = find_neighbors(tiles);
+    let image = assemble(&mut tiles, (top_left.unwrap(), Default::default()));
+    let (oriented_image, monster_indices) = find_monsters(&image);
+
+    oriented_image
+        .lines()
+        .enumerate()
+        .map(|(row, line)| {
+            line.char_indices()
+                .filter_map(|(col, ch)| match ch {
+                    '#' if !monster_indices.contains(&(row, col)) => Some(()),
+                    _ => None,
+                })
+                .count()
+        })
+        .sum()
 }
 
 #[cfg(test)]
