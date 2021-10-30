@@ -198,7 +198,21 @@ fn get_side(
     rotation: usize,
     side: usize,
 ) -> Option<OrientedTile> {
-    todo!()
+    let flipped = (side + 2) % 4;
+
+    let is_even = rotation % 2 == 0;
+    let is_even_side = side % 2 == 0;
+    let is_flipped = if is_even_side {
+        is_even && vert || !is_even && horz
+    } else {
+        is_even && horz || !is_even && vert
+    };
+    let side = if is_flipped { flipped } else { side };
+
+    let mut neigh = *neighbors;
+    neigh.rotate_right(rotation);
+
+    neigh[side]
 }
 
 /// rotate a grid (2d vec) clockwise `units` times
