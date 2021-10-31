@@ -203,3 +203,144 @@ where
         of(value)
     }
 }
+
+pub mod three {
+    //! [3-3. Adding position and context to error messages](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators-3/#3-adding-position-and-context-to-error-messages)
+
+    #[derive(Debug, Default, Clone, Copy)]
+    struct Position {
+        line: usize,
+        column: usize,
+    }
+
+    /// increment the column number
+    fn incr_col(pos: Position) -> Position {
+        Position {
+            column: pos.column + 1,
+            ..pos
+        }
+    }
+
+    /// increment the line number and set the column to 0
+    fn incr_line(pos: Position) -> Position {
+        Position {
+            line: pos.line + 1,
+            column: 0,
+        }
+    }
+
+    /// Define the current parser input state
+    #[derive(Debug, Default, Clone)]
+    struct InputState<'a> {
+        lines: Vec<&'a str>,
+        position: Position,
+    }
+
+    /// parse an InputState from a str
+    impl<'a> From<&'a str> for InputState<'a> {
+        fn from(input: &'a str) -> Self {
+            if input.is_empty() {
+                return InputState {
+                    lines: vec![],
+                    ..Default::default()
+                };
+            }
+
+            InputState {
+                lines: input.lines().collect::<Vec<&'a str>>(),
+                ..Default::default()
+            }
+        }
+    }
+
+    /// return the current line
+    fn current_line<'a>(input: &InputState<'a>) -> &'a str {
+        let line_pos = input.position.line;
+        if line_pos < input.lines.len() {
+            input.lines[line_pos]
+        } else {
+            "end of file"
+        }
+    }
+
+    /// Get the next character from the input, if any, otherwise return None.
+    /// Also return the updated InputState
+    /// InputState -> InputState * char option
+    fn next_char<'a>(input: InputState<'a>) -> (InputState<'a>, Option<char>) {
+        let line_pos = input.position.line;
+        let col_pos = input.position.column;
+        // three cases
+        // 1) if line >= maxLine ->
+        //       return EOF
+        // 2) if col less than line length ->
+        //       return char at colPos, increment colPos
+        // 3) if col at line length ->
+        //       return NewLine, increment linePos
+        if line_pos >= input.lines.len() {
+            (input, None)
+        } else {
+            let current_line = current_line(&input);
+            if col_pos < current_line.len() {
+                let ch = current_line.chars().nth(col_pos);
+                let new_pos = incr_col(input.position);
+                let new_state = InputState {
+                    position: new_pos,
+                    ..input
+                };
+
+                (new_state, ch)
+            } else {
+                // end of line, so return LF and move to next line
+                let ch = '\n';
+                let new_pos = incr_line(input.position);
+                let new_state = InputState {
+                    position: new_pos,
+                    ..input
+                };
+
+                (new_state, Some(ch))
+            }
+        }
+    }
+
+    fn read_all_chars(input: InputState<'_>) -> Vec<char> {
+        let mut result = vec![];
+        let (remaining_input, char_opt) = next_char(input);
+        match char_opt {
+            None => {}
+            Some(ch) => {
+                // return first character
+                result.push(ch);
+                // return the remaining characters
+                result.extend(read_all_chars(remaining_input));
+            }
+        }
+
+        result
+    }
+
+    #[cfg(test)]
+    mod test {
+        use super::*;
+
+        #[test]
+        fn all_chars() {
+            let msg = "should return a Vec of char";
+            let expected = vec![];
+            let actual = read_all_chars("".into());
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['a', '\n'];
+            let actual = read_all_chars("a".into());
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['a', 'b', '\n'];
+            let actual = read_all_chars("ab".into());
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['a', '\n', 'b', '\n'];
+            let actual = read_all_chars("a\nb".into());
+            assert_eq!(actual, expected, "{}", msg);
+        }
+    }
+}
