@@ -449,6 +449,18 @@ pub mod three {
                 }),
             }
         }
+
+        /// Update the label in the parser
+        pub fn with_label(self, label: String) -> Self {
+            let Self { parse, label: _ } = self;
+            Parser {
+                label: label.clone(),
+                parse: Rc::new(move |input: InputState| {
+                    (parse)(input)
+                        .map_err(|ParseErr(_old_label, err, pos)| ParseErr(label.clone(), err, pos))
+                }),
+            }
+        }
     }
 
     // more idiomatic than `of` in Rust
