@@ -583,6 +583,16 @@ pub mod three {
         })
     }
 
+    /// Parses an optional occurrence of parser and returns an Option value.
+    pub fn optional<'a, O>(parser: Parser<'a, O>) -> Parser<'a, Option<O>>
+    where
+        O: 'a + Clone + fmt::Debug,
+    {
+        let some = parser.map(Option::from);
+        let none = Parser::of(None);
+        or_else(some, none)
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
