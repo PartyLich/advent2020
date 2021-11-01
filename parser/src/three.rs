@@ -422,6 +422,30 @@ pub mod three {
         fn parse_input(&self, input: InputState<'a>) -> ParseResult<'a, O> {
             (self.parse)(input)
         }
+
+        /// Lift a value to a context
+        pub fn of(value: O) -> Self
+        where
+            O: Clone + fmt::Debug,
+        {
+            Parser {
+                label: format!("{:?}", value),
+                parse: Rc::new(move |input: InputState| {
+                    // ignore the input and return value
+                    Ok((input, value.clone()))
+                }),
+            }
+        }
+    }
+
+    // more idiomatic than `of` in Rust
+    impl<'a, O: 'a> From<O> for Parser<'a, O>
+    where
+        O: Clone + fmt::Debug,
+    {
+        fn from(value: O) -> Self {
+            Parser::of(value)
+        }
     }
 
     #[cfg(test)]
