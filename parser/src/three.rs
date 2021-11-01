@@ -507,6 +507,11 @@ pub mod three {
         }
     }
 
+    /// Choose any of a list of parsers
+    pub fn choice<'a, O: 'a>(parsers: impl IntoIterator<Item = Parser<'a, O>>) -> Parser<'a, O> {
+        parsers.into_iter().reduce(or_else).unwrap()
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
