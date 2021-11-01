@@ -549,6 +549,27 @@ pub mod three {
         }
     }
 
+    /// match one or more occurrences of the specified parser
+    pub fn one_or_more<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+        let label = format!("one or more {}", parser.label);
+        Parser {
+            label: label.clone(),
+            parse: Rc::new(move |input: InputState| {
+                // run parser with the input
+                let (input_after_first_parse, first_value) = parser.parse_input(input)?;
+
+                // if first found, look for zeroOrMore now
+                let (remaining_input, mut subsequent_values) = zero_or_more(parser.clone())
+                    .parse_input(input_after_first_parse)
+                    .unwrap();
+                let mut values = vec![first_value];
+                values.append(&mut subsequent_values);
+                Ok((remaining_input, values))
+            }),
+        }
+        .with_label(label)
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
