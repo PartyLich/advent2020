@@ -411,6 +411,19 @@ pub mod three {
         }
     }
 
+    // fixing up the `run` function
+    impl<'a, O: 'a> Parser<'a, O> {
+        /// Run the parser on a InputState
+        pub fn parse(&self, input: &'a str) -> ParseResult<'a, O> {
+            (self.parse)(input.into())
+        }
+
+        /// Run the parser on a string
+        fn parse_input(&self, input: InputState<'a>) -> ParseResult<'a, O> {
+            (self.parse)(input)
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
