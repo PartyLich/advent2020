@@ -466,6 +466,11 @@ pub mod three {
         pub fn and_then<U: 'a>(self, other: Parser<'a, U>) -> Parser<'a, (O, U)> {
             and_then(self, other)
         }
+
+        /// return a parser that combines this parser or else other parser
+        pub fn or_else(self, other: Parser<'a, O>) -> Self {
+            or_else(self, other)
+        }
     }
 
     // more idiomatic than `of` in Rust
@@ -487,6 +492,17 @@ pub mod three {
                 let (remaining, result2) = p2.parse_input(remaining)?;
                 let new_value = (result1, result2);
                 Ok((remaining, new_value))
+            }),
+        }
+    }
+
+    /// Combine two parsers as "A orElse B"
+    pub fn or_else<'a, O: 'a>(p1: Parser<'a, O>, p2: Parser<'a, O>) -> Parser<'a, O> {
+        Parser {
+            label: format!("{} or else {}", p1.label, p2.label),
+            parse: Rc::new(move |input: InputState| {
+                p1.parse_input(input.clone())
+                    .or_else(|_| p2.parse_input(input))
             }),
         }
     }
