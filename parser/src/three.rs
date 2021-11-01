@@ -658,6 +658,23 @@ pub mod three {
         sequence(&parsers).map(String::from_iter).with_label(label)
     }
 
+    /// parse a single whitespace character
+    pub fn whitespace_char<'a>() -> Parser<'a, char> {
+        let predicate = |ch: char| ch.is_whitespace();
+        let label = "whitespace".to_string();
+        satisfy(predicate, label)
+    }
+
+    /// parse zero or more whitespace char
+    pub fn spaces<'a>() -> Parser<'a, Vec<char>> {
+        many(whitespace_char())
+    }
+
+    /// parse one or more whitespace char
+    pub fn one_or_more_spaces<'a>() -> Parser<'a, Vec<char>> {
+        one_or_more(whitespace_char())
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
@@ -838,6 +855,39 @@ B|C
 A|C
  ^Unexpected '|'"#;
             let actual = p_string("AB").parse("A|C");
+            assert_eq!(print_result(actual), expected, "{}", msg);
+        }
+
+        #[test]
+        fn many_spaces() {
+            let msg = "should parse zero or more whitespace chars";
+
+            let spaces = spaces();
+
+            let expected = vec![' '];
+            let (_, actual) = spaces.parse(" ABC").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec![];
+            let (_, actual) = spaces.parse("A").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn one_plus_spaces() {
+            let msg = "should parse one or more whitespace chars";
+
+            let spaces = one_or_more_spaces();
+
+            let expected = vec![' '];
+            let (_, actual) = spaces.parse(" ABC").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = r#"Line:0 Col:0 Error parsing one or more whitespace
+A
+^Unexpected 'A'"#
+                .to_string();
+            let actual = spaces.parse("A");
             assert_eq!(print_result(actual), expected, "{}", msg);
         }
     }
