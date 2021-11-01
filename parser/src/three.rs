@@ -512,6 +512,43 @@ pub mod three {
         parsers.into_iter().reduce(or_else).unwrap()
     }
 
+    /// (helper) match zero or more occurrences of the specified parser
+    fn zero_or_more<'a, O: 'a>(parser: Parser<'a, O>) -> Parser<'a, Vec<O>> {
+        let label = format!("zero or more {}", parser.label);
+        Parser {
+            label,
+            parse: Rc::new(move |input: InputState| {
+                // run parser with the input
+                let first_result = parser.parse_input(input.clone());
+                // test the result for Failure/Success
+                match first_result {
+                    // if parse fails, return empty list
+                    Err(_err) => Ok((input, vec![])),
+                    // if parse succeeds, call recursively to get the subsequent values
+                    Ok((input_after_first_parse, first_value)) => {
+                        let (remaining_input, subsequent_values) = zero_or_more(parser.clone())
+                            .parse_input(input_after_first_parse)
+                            .unwrap();
+                        let mut values = vec![first_value];
+                        values.extend(subsequent_values);
+                        Ok((remaining_input, values))
+                    }
+                }
+            }),
+        }
+    }
+
+    /// match zero or more occurrences of the specified parser
+    pub fn many<'a, T: 'a>(parser: Parser<'a, T>) -> Parser<'a, Vec<T>> {
+        let label = format!("many {}", parser.label);
+        Parser {
+            label,
+            parse: Rc::new(move |input: InputState| {
+                zero_or_more(parser.clone()).parse_input(input)
+            }),
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
