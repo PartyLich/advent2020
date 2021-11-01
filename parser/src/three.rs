@@ -436,6 +436,19 @@ pub mod three {
                 }),
             }
         }
+
+        /// apply a function to the value inside a parser
+        pub fn map<U>(self, f: impl Fn(O) -> U + 'a) -> Parser<'a, U> {
+            let Self { parse, label } = self;
+            Parser {
+                label,
+                parse: Rc::new(move |input: InputState| {
+                    let (remaining, result) = (parse)(input)?;
+                    let mapped_value = f(result);
+                    Ok((remaining, mapped_value))
+                }),
+            }
+        }
     }
 
     // more idiomatic than `of` in Rust
