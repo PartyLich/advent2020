@@ -206,6 +206,7 @@ where
 
 pub mod three {
     //! [3-3. Adding position and context to error messages](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators-3/#3-adding-position-and-context-to-error-messages)
+    use std::fmt;
     use std::rc::Rc;
 
     use super::{ParserError, ParserLabel};
@@ -358,6 +359,35 @@ pub mod three {
         pub label: String,
     }
 
+    impl std::error::Error for ParseErr<'_> {}
+
+    impl fmt::Display for ParseErr<'_> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            let ParseErr(label, error, parser_pos) = self;
+            let error_line = parser_pos.current_line;
+            let col_pos = parser_pos.column;
+            let line_pos = parser_pos.line;
+            // pad and right align caret
+            let failure_caret = format!("{:>width$}^{}", "", error, width = col_pos,);
+            write!(
+                f,
+                "Line:{} Col:{} Error parsing {}\n{}\n{}",
+                line_pos, col_pos, label, error_line, failure_caret
+            )
+        }
+    }
+
+    /// Return the String representation of a ParseResult
+    fn print_result<O>(result: ParseResult<O>) -> String
+    where
+        O: std::fmt::Debug,
+    {
+        match result {
+            Ok((_input, value)) => format!("{:?}", value),
+            Err(err) => format!("{}", err),
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
@@ -379,6 +409,27 @@ pub mod three {
 
             let expected = vec!['a', '\n', 'b', '\n'];
             let actual = read_all_chars("a\nb".into());
+            assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn prints_err() {
+            let msg = "should print pleasant error output";
+
+            let ex_err: ParseResult<Vec<char>> = Err(ParseErr(
+                "identifier".to_string(),
+                "unexpected |".to_string(),
+                ParserPosition {
+                    current_line: "123 ab|cd",
+                    line: 1,
+                    column: 6,
+                },
+            ));
+
+            let expected = r#"Line:1 Col:6 Error parsing identifier
+123 ab|cd
+      ^unexpected |"#;
+            let actual = print_result(ex_err);
             assert_eq!(actual, expected, "{}", msg);
         }
     }
