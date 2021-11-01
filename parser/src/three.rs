@@ -402,6 +402,15 @@ pub mod three {
         }
     }
 
+    impl<O> Clone for Parser<'_, O> {
+        fn clone(&self) -> Self {
+            Parser {
+                parse: self.parse.clone(),
+                label: self.label.clone(),
+            }
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
