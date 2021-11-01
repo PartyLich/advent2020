@@ -394,6 +394,14 @@ pub mod three {
         }
     }
 
+    impl<O> std::fmt::Debug for Parser<'_, O> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.debug_struct("Parser")
+                .field("label", &self.label)
+                .finish()
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
