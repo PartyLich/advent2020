@@ -773,5 +773,19 @@ BCD
             let actual = one_plus_a.parse("BCD");
             assert_eq!(print_result(actual), expected, "{}", msg);
         }
+
+        #[test]
+        fn labeling() {
+            let msg = "should apply a new label to a parser";
+
+            let parse_a = p_char('A').with_label("Foo".to_string());
+            println!("{}", parse_a.label);
+
+            let expected = r#"Line:0 Col:0 Error parsing Foo
+B|C
+^Unexpected 'B'"#;
+            let actual = parse_a.parse("B|C").unwrap_err();
+            assert_eq!(format!("{}", actual), expected, "{}", msg);
+        }
     }
 }
