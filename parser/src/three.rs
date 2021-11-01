@@ -461,6 +461,11 @@ pub mod three {
                 }),
             }
         }
+
+        /// return a parser that combines this parser and then other parser
+        pub fn and_then<U: 'a>(self, other: Parser<'a, U>) -> Parser<'a, (O, U)> {
+            and_then(self, other)
+        }
     }
 
     // more idiomatic than `of` in Rust
@@ -470,6 +475,19 @@ pub mod three {
     {
         fn from(value: O) -> Self {
             Parser::of(value)
+        }
+    }
+
+    /// Combine two parsers as "A andThen B"
+    pub fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, (T, U)> {
+        Parser {
+            label: format!("{} and then {}", p1.label, p2.label),
+            parse: Rc::new(move |input: InputState| {
+                let (remaining, result1) = p1.parse_input(input)?;
+                let (remaining, result2) = p2.parse_input(remaining)?;
+                let new_value = (result1, result2);
+                Ok((remaining, new_value))
+            }),
         }
     }
 
