@@ -675,6 +675,70 @@ pub mod three {
         one_or_more(whitespace_char())
     }
 
+    /// parse a single digit
+    pub fn digit_char<'a>(base: u32) -> Parser<'a, char> {
+        let predicate = move |ch: char| ch.is_digit(base);
+        let label = "digit".to_string();
+        satisfy(predicate, label)
+    }
+
+    /// parse an integer (with sign support)
+    fn p_int<'a>(base: u32) -> Parser<'a, isize> {
+        // helper
+        fn result_to_int((sign, digits): (Option<char>, Vec<char>)) -> isize {
+            let i = String::from_iter(digits)
+                // ignore int overflow for now
+                .parse::<isize>()
+                .unwrap();
+            match sign {
+                Some(_) => -i,
+                None => i,
+            }
+        }
+
+        let label = "integer".to_string();
+        // define parser for one or more digits
+        let digits = one_or_more(digit_char(base));
+
+        // an "int" is optional sign + one or more digits
+        optional(p_char('-'))
+            .and_then(digits)
+            .map(result_to_int)
+            .with_label(label)
+    }
+
+    // parse a float
+    fn p_float<'a>(base: u32) -> Parser<'a, f64> {
+        // helper
+        fn result_to_float(
+            (((sign, digits), point), digits2): (((Option<char>, Vec<char>), char), Vec<char>),
+        ) -> f64 {
+            let i = format!(
+                "{}.{}",
+                String::from_iter(digits),
+                String::from_iter(digits2)
+            )
+            .parse::<f64>()
+            .unwrap();
+            match sign {
+                Some(_) => -i,
+                None => i,
+            }
+        }
+
+        let label = "float".to_string();
+        // define parser for one or more digits
+        let digits = one_or_more(digit_char(base));
+
+        // a float is sign, digits, point, digits (ignore exponents for now)
+        optional(p_char('-'))
+            .and_then(digits.clone())
+            .and_then(p_char('.'))
+            .and_then(digits)
+            .map(result_to_float)
+            .with_label(label)
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
@@ -888,6 +952,50 @@ A
 ^Unexpected 'A'"#
                 .to_string();
             let actual = spaces.parse("A");
+            assert_eq!(print_result(actual), expected, "{}", msg);
+        }
+
+        #[test]
+        fn parse_integer() {
+            let msg = "should parse an integer";
+
+            let parse_int = p_int(10);
+
+            let expected = 123;
+            let (_, actual) = parse_int.parse("123C").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = -123;
+            let (_, actual) = parse_int.parse("-123C").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = r#"Line:0 Col:1 Error parsing integer
+-Z123
+ ^Unexpected 'Z'"#
+                .to_string();
+            let actual = parse_int.parse("-Z123");
+            assert_eq!(print_result(actual), expected, "{}", msg);
+        }
+
+        #[test]
+        fn parse_float() {
+            let msg = "should parse a float";
+
+            let parse_float = p_float(10);
+
+            let expected = 123.45;
+            let (_, actual) = parse_float.parse("123.45C").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = -123.45;
+            let (_, actual) = parse_float.parse("-123.45C").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = r#"Line:0 Col:4 Error parsing float
+-123Z45
+    ^Unexpected 'Z'"#
+                .to_string();
+            let actual = parse_float.parse("-123Z45");
             assert_eq!(print_result(actual), expected, "{}", msg);
         }
     }
