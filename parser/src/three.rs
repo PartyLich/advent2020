@@ -206,6 +206,9 @@ where
 
 pub mod three {
     //! [3-3. Adding position and context to error messages](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators-3/#3-adding-position-and-context-to-error-messages)
+    use std::rc::Rc;
+
+    use super::{ParserError, ParserLabel};
 
     #[derive(Debug, Default, Clone, Copy)]
     struct Position {
@@ -317,6 +320,42 @@ pub mod three {
         }
 
         result
+    }
+
+    /// Stores information about the parser position for error messages
+    #[derive(Debug)]
+    struct ParserPosition<'a> {
+        /// Current line as a str
+        current_line: &'a str,
+        /// Current line number
+        line: usize,
+        /// Current column within the current line
+        column: usize,
+    }
+
+    // We’ll need some way to convert a InputState into a ParserPosition:
+    impl<'a> From<InputState<'a>> for ParserPosition<'a> {
+        fn from(input: InputState<'a>) -> Self {
+            Self {
+                current_line: current_line(&input),
+                line: input.position.line,
+                column: input.position.column,
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct ParseErr<'a>(ParserLabel, ParserError, ParserPosition<'a>);
+
+    pub type ParseResult<'a, O> = Result<(InputState<'a>, O), ParseErr<'a>>;
+
+    // In addition, the Parser type needs to change from string to InputState:
+    type ParseFn<'a, O> = dyn Fn(InputState<'a>) -> ParseResult<'a, O> + 'a;
+
+    pub struct Parser<'a, O> {
+        parse: Rc<ParseFn<'a, O>>,
+        /// Displayable description of this parser
+        pub label: String,
     }
 
     #[cfg(test)]
