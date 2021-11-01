@@ -207,6 +207,7 @@ where
 pub mod three {
     //! [3-3. Adding position and context to error messages](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators-3/#3-adding-position-and-context-to-error-messages)
     use std::fmt;
+    use std::iter::FromIterator;
     use std::rc::Rc;
 
     use super::{ParserError, ParserLabel};
@@ -631,6 +632,32 @@ pub mod three {
         satisfy(predicate, label)
     }
 
+    /// Choose any of a list of characters
+    pub fn any_of<'a>(char_list: impl IntoIterator<Item = char> + fmt::Debug) -> Parser<'a, char> {
+        let label = format!("anyOf {:?}", char_list);
+        let parsers = char_list.into_iter().map(p_char).collect::<Vec<_>>();
+        choice(parsers).with_label(label)
+    }
+
+    /// Parses a sequence of zero or more chars with the char parser cp.
+    /// It returns the parsed chars as a string.
+    pub fn many_chars<'a>(cp: Parser<'a, char>) -> Parser<'a, String> {
+        many(cp).map(String::from_iter)
+    }
+
+    /// Parses a sequence of one or more chars with the char parser cp.
+    /// It returns the parsed chars as a string.
+    pub fn one_or_more_chars<'a>(cp: Parser<'a, char>) -> Parser<'a, String> {
+        one_or_more(cp).map(String::from_iter)
+    }
+
+    /// Parse a specific string
+    pub fn p_string<'a>(string: &str) -> Parser<'a, String> {
+        let label = string.to_string();
+        let parsers = string.chars().map(p_char).collect::<Vec<_>>();
+        sequence(&parsers).map(String::from_iter).with_label(label)
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
@@ -798,6 +825,20 @@ B|C
             let expected = vec!['A', 'B', 'C'];
             let (_, actual) = combined.parse("ABCD").unwrap();
             assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn parse_string() {
+            let msg = "should parse a string";
+            let expected = "\"AB\"";
+            let actual = p_string("AB").parse("ABC");
+            assert_eq!(print_result(actual), expected, "{}", msg);
+
+            let expected = r#"Line:0 Col:1 Error parsing AB
+A|C
+ ^Unexpected '|'"#;
+            let actual = p_string("AB").parse("A|C");
+            assert_eq!(print_result(actual), expected, "{}", msg);
         }
     }
 }
