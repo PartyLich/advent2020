@@ -492,6 +492,8 @@ pub fn two(file_path: &str) -> usize {
 
 #[cfg(test)]
 mod test {
+    use std::iter::FromIterator;
+
     use super::*;
 
     #[test]
@@ -597,6 +599,53 @@ mod test {
         // 2953 -> 1069
         let expected = (false, false, 1);
         let actual = next_orient((true, true, 0), (true, true, 1));
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn assembly() {
+        let msg = "should assemble the image";
+
+        let input = read_file("input/20-t.txt");
+        let tiles: Vec<_> = input
+            .trim()
+            .split("\n\n")
+            .map(Tile::from_str)
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+
+        let (top_left, mut tiles) = find_neighbors(tiles);
+        let actual = assemble(&mut tiles, (top_left.unwrap(), Default::default()))
+            .into_iter()
+            .rev()
+            .map(String::from_iter)
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let expected = r#".#.#..#.##...#.##..#####
+###....#.#....#..#......
+##.##.###.#.#..######...
+###.#####...#.#####.#..#
+##.#....#.##.####...#.##
+...########.#....#####.#
+....#..#...##..#.#.###..
+.####...#..#.....#......
+#..#.##..#..###.#.##....
+#.####..#.####.#.#.###..
+###.#.#...#.######.#..##
+#.####....##..########.#
+##..##.#...#...#.#.#.#..
+...#..#..#.#.##..###.###
+.#.#....#.##.#...###.##.
+###.#...#..#.##.######..
+.#.#.###.##.##.#..#.##..
+.####.###.#...###.#..#.#
+..#.#..#..#.#.#.####.###
+#..####...#.#.#.###.###.
+#####..#####...###....##
+#.##..#..#...#..####...#
+.#.###..##..##..####.##.
+...###...##...#...#..###"#;
         assert_eq!(actual, expected, "{}", msg);
     }
 
