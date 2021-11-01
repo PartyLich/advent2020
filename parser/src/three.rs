@@ -692,5 +692,86 @@ B|C
             let actual = parse_ab.parse("B|C").unwrap_err();
             assert_eq!(format!("{}", actual), expected, "{}", msg);
         }
+
+        #[test]
+        fn and_thens() {
+            let msg = "should parse 'A' and then 'B'";
+
+            let parse_ab = p_char('A').and_then(p_char('B'));
+
+            let expected = r#"Line:0 Col:1 Error parsing B
+A|C
+ ^Unexpected '|'"#;
+            let actual = parse_ab.parse("A|C").unwrap_err();
+            assert_eq!(format!("{}", actual), expected, "{}", msg);
+        }
+
+        #[test]
+        fn or_else_t() {
+            let msg = "should parse 'A' or else 'B'";
+
+            let parse_ab = p_char('A').or_else(p_char('B'));
+
+            let expected = 'B';
+            let (_, actual) = parse_ab.parse("B").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = r#"Line:0 Col:0 Error parsing B
+C|C
+^Unexpected 'C'"#;
+            let actual = parse_ab.parse("C|C").unwrap_err();
+            assert_eq!(format!("{}", actual), expected, "{}", msg);
+        }
+
+        #[test]
+        fn many_matches() {
+            let msg = "should parse zero or more 'A' chars";
+
+            let zero_plus_a = many(p_char('A'));
+
+            let expected = vec!['A'];
+            let (_, actual) = zero_plus_a.parse("ABCD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['A', 'A'];
+            let (_, actual) = zero_plus_a.parse("AACD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['A', 'A', 'A'];
+            let (_, actual) = zero_plus_a.parse("AAAD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            // test a case with no matches
+            let expected = vec![];
+            let (_, actual) = zero_plus_a.parse("|BCD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn one_plus() {
+            let msg = "should parse one or more 'A' chars";
+
+            let one_plus_a = one_or_more(p_char('A'));
+
+            let expected = vec!['A'];
+            let (_, actual) = one_plus_a.parse("ABCD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['A', 'A'];
+            let (_, actual) = one_plus_a.parse("AACD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec!['A', 'A', 'A'];
+            let (_, actual) = one_plus_a.parse("AAAD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            // failure case
+            let expected = r#"Line:0 Col:0 Error parsing one or more A
+BCD
+^Unexpected 'B'"#
+                .to_string();
+            let actual = one_plus_a.parse("BCD");
+            assert_eq!(print_result(actual), expected, "{}", msg);
+        }
     }
 }
