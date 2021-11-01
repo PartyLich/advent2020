@@ -570,6 +570,19 @@ pub mod three {
         .with_label(label)
     }
 
+    /// Convert a list of Parsers into a Parser of a list
+    pub fn sequence<'a, O: 'a>(list: &[Parser<'a, O>]) -> Parser<'a, Vec<O>>
+    where
+        O: Clone + fmt::Debug,
+    {
+        list.iter().cloned().fold(Parser::of(vec![]), |acc, next| {
+            and_then(acc, next).map(|(mut a, b)| {
+                a.push(b);
+                a
+            })
+        })
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
