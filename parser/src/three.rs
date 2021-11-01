@@ -787,5 +787,17 @@ B|C
             let actual = parse_a.parse("B|C").unwrap_err();
             assert_eq!(format!("{}", actual), expected, "{}", msg);
         }
+
+        #[test]
+        fn sequences() {
+            let msg = "should sequence a list of parsers";
+
+            let parsers = vec![p_char('A'), p_char('B'), p_char('C')];
+            let combined = sequence(&parsers);
+
+            let expected = vec!['A', 'B', 'C'];
+            let (_, actual) = combined.parse("ABCD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+        }
     }
 }
