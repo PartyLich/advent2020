@@ -622,6 +622,15 @@ pub mod three {
         }
     }
 
+    // 3-4. Adding some standard parsers to the library
+
+    /// Parse a single character
+    pub fn p_char<'a>(char_to_match: char) -> Parser<'a, char> {
+        let predicate = move |ch: char| ch == char_to_match;
+        let label = format!("{}", char_to_match);
+        satisfy(predicate, label)
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
@@ -665,6 +674,23 @@ pub mod three {
       ^unexpected |"#;
             let actual = print_result(ex_err);
             assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn parse_char() {
+            let msg = "should parse a single char";
+
+            let parse_ab = p_char('A');
+
+            let expected = 'A';
+            let (_, actual) = parse_ab.parse("A|C").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = r#"Line:0 Col:0 Error parsing A
+B|C
+^Unexpected 'B'"#;
+            let actual = parse_ab.parse("B|C").unwrap_err();
+            assert_eq!(format!("{}", actual), expected, "{}", msg);
         }
     }
 }
