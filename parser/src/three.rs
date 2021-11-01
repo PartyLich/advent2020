@@ -593,6 +593,35 @@ pub mod three {
         or_else(some, none)
     }
 
+    /// Match an input token if the predicate is satisfied
+    pub fn satisfy<'a>(predicate: impl Fn(char) -> bool + 'a, label: String) -> Parser<'a, char> {
+        Parser {
+            label: label.clone(),
+            parse: Rc::new(move |input: InputState| {
+                let (remaining_input, char_opt) = next_char(input.clone());
+
+                match char_opt {
+                    None => {
+                        let err = "No more input".to_string();
+                        let pos = input.into();
+
+                        Err(ParseErr(label.clone(), err, pos))
+                    }
+                    Some(first) => {
+                        if !predicate(first) {
+                            let err = format!("Unexpected {:?}", first);
+                            let pos = input.into();
+
+                            return Err(ParseErr(label.clone(), err, pos));
+                        }
+
+                        Ok((remaining_input, first))
+                    }
+                }
+            }),
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::*;
