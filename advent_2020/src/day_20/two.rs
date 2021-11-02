@@ -255,6 +255,36 @@ fn rotate_grid<T: Clone>(grid: Vec<Vec<T>>, units: usize) -> Vec<Vec<T>> {
     }
 }
 
+/// flip a grid (2d vec) on its vertical and/or horizontal axes
+pub fn flip_grid<I, T: Clone>(grid: I, vertical: bool, horizontal: bool) -> Vec<Vec<T>>
+where
+    I: IntoIterator<Item = Vec<T>>,
+    <I as IntoIterator>::IntoIter: DoubleEndedIterator,
+{
+    if vertical {
+        grid.into_iter()
+            .rev()
+            .map(|row| {
+                if horizontal {
+                    row.into_iter().rev().collect()
+                } else {
+                    row
+                }
+            })
+            .collect()
+    } else {
+        grid.into_iter()
+            .map(|row| {
+                if horizontal {
+                    row.into_iter().rev().collect()
+                } else {
+                    row
+                }
+            })
+            .collect()
+    }
+}
+
 fn next_orient(
     (mut glob_vert, mut glob_horz, global_rotation): Orientation,
     (mut vert, mut horz, rot): Orientation,
