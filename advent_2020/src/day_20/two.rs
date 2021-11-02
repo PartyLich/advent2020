@@ -1,6 +1,7 @@
 //! Solutions to 2020 day 20 part 2
 //! --- Day 20: Jurassic Jigsaw ---
 use std::collections::HashMap;
+use std::iter::FromIterator;
 use std::str::FromStr;
 
 use regex::Regex;
@@ -509,6 +510,19 @@ fn print_monsters(image: &str, monster_indices: &[(usize, usize)]) {
         println!();
     }
     println!();
+}
+
+#[allow(dead_code)]
+fn print_tiles(image: &[Vec<char>], tile_width: usize) {
+    for tile in image.chunks(tile_width) {
+        for row in tile {
+            for tile in row.chunks(tile_width) {
+                print!("{} ", String::from_iter(tile));
+            }
+            println!();
+        }
+        println!();
+    }
 }
 
 /// returns count of '#' chars that are not part of a sea monster
