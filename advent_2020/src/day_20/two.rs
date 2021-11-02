@@ -318,8 +318,6 @@ fn get_row(
         ..
     } = tile_map.remove(&top_left.0).unwrap();
 
-    // NOTE: square tiles only
-    let height = body.len();
     let mut glob_vert = top_left.1 .0;
     let mut glob_horz = top_left.1 .1;
     let mut absolute_rotation = top_left.1 .2;
@@ -335,7 +333,8 @@ fn get_row(
     );
 
     // orient body
-    let mut row = rotate_grid(body, absolute_rotation);
+    let row = flip_grid(body, glob_vert, glob_horz);
+    let mut row = rotate_grid(row, absolute_rotation);
 
     while let Some((next_id, next_o)) =
         get_side(&neighbors, glob_vert, glob_horz, absolute_rotation, 1)
@@ -347,21 +346,12 @@ fn get_row(
         glob_vert = v;
         glob_horz = h;
 
-        let next_body = rotate_grid(next_tile.body, absolute_rotation);
-
+        // orient next body tile
+        let next_body = flip_grid(next_tile.body, glob_vert, glob_horz);
+        let next_body = rotate_grid(next_body, absolute_rotation);
+        // append to row
         for (idx, line) in row.iter_mut().enumerate() {
-            let mut r = idx;
-            // vert flip
-            if glob_vert {
-                r = (height - 1) - idx;
-            }
-
-            // horz flip
-            if glob_horz {
-                line.extend(next_body[r].iter().rev());
-            } else {
-                line.extend(next_body[r].iter());
-            }
+            line.extend(next_body[idx].iter());
         }
 
         neighbors = next_tile.neighbors;
