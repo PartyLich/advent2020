@@ -492,6 +492,25 @@ fn find_monsters(image: &[Vec<char>]) -> (String, Vec<(usize, usize)>) {
     })
 }
 
+#[allow(dead_code)]
+fn print_monsters(image: &str, monster_indices: &[(usize, usize)]) {
+    println!();
+    for (row, line) in image.lines().enumerate() {
+        for (col, ch) in line.char_indices() {
+            match ch {
+                '#' if monster_indices.contains(&(row, col)) => {
+                    print!("O");
+                }
+                _ => {
+                    print!("{}", ch);
+                }
+            }
+        }
+        println!();
+    }
+    println!();
+}
+
 /// returns count of '#' chars that are not part of a sea monster
 pub fn two(file_path: &str) -> usize {
     let input = read_file(file_path);
