@@ -1,6 +1,6 @@
 //! Solutions to 2020 day 21 problems
 //! --- Day 21: Allergen Assessment ---
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::day_1::read_file;
 
@@ -124,6 +124,29 @@ fn find_unique_allergens(map: &mut HashMap<&str, Ingredient>) {
 
         guard += 1;
     }
+}
+
+/// print logic grid
+#[allow(dead_code)]
+fn logic_grid(map: &HashMap<&str, Ingredient>, allergens: &HashSet<&str>) {
+    println!();
+    print!("{:12}", "");
+    for a in allergens {
+        print!("| {:4} ", a.chars().take(4).collect::<String>());
+    }
+    println!();
+    for (ingredient_name, ingredient) in map.iter() {
+        print!(
+            "{:<11} ",
+            ingredient_name.chars().take(10).collect::<String>()
+        );
+        for a in allergens {
+            let count = ingredient.allergens.get(a).or(Some(&0)).unwrap();
+            print!("| {:4} ", count);
+        }
+        println!();
+    }
+    println!();
 }
 
 /// return count of allergen free ingredient appearances
