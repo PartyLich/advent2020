@@ -167,6 +167,11 @@ pub fn one(file_path: &str) -> usize {
         .sum()
 }
 
+/// returns list of allergen containing ingredients sorted by allergen
+pub fn two(file_path: &str) -> String {
+    todo()!;
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -176,6 +181,14 @@ mod test {
         let msg = "should count of allergen free ingredient appearances";
         let expected = 5;
         let actual = one("input/21-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should print alpha ordered list of allergen containing ingredients";
+        let expected = "mxmxvkd,sqjhc,fvjkl";
+        let actual = two("input/21-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
