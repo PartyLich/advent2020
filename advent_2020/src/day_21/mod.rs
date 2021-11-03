@@ -56,10 +56,46 @@ fn parse(input: &str) -> HashMap<&str, Ingredient> {
         })
 }
 
+/// retain only allergens equal to the max for each ingredient
+///
+/// eg if foo is associated with Dairy twice and Fish once, keep only Dairy
+fn retain_maxes(map: &mut HashMap<&str, Ingredient>) {
+    let mut maxes = HashMap::new();
+
+    for ingredient in map.values_mut() {
+        let (max_name, max) = ingredient.max;
+        ingredient.allergens.iter().for_each(|(min_name, min)| {
+            // update global max for allergen
+            if *min_name == max_name {
+                let global_max = maxes.entry(max_name).or_insert(max);
+                if max > *global_max {
+                    *global_max = max;
+                }
+
+                return;
+            }
+
+            let global_max = maxes.entry(min_name).or_insert(*min);
+            if *min > *global_max {
+                *global_max = *min;
+            }
+        })
+    }
+
+    // remove any allergen associated less than max
+    for ingredient in map.values_mut() {
+        ingredient.allergens.retain(|name, count| {
+            let max = maxes.get(name).unwrap_or(&0);
+            *count >= *max
+        });
+    }
+}
+
 /// return count of allergen free ingredient appearances
 pub fn one(file_path: &str) -> usize {
     let input = read_file(file_path);
-    let map = parse(&input);
+    let mut map = parse(&input);
+    retain_maxes(&mut map);
 
     todo!();
 }
