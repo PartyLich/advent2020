@@ -91,11 +91,47 @@ fn retain_maxes(map: &mut HashMap<&str, Ingredient>) {
     }
 }
 
+/// retain only unique allergens
+fn find_unique_allergens(map: &mut HashMap<&str, Ingredient>) {
+    let mut found = HashMap::new();
+    let mut count = 1;
+    let mut guard = 0;
+
+    // limit to 1000 in case something goes terribly wrong and we're heading toward an infinite loop
+    while count != 0 && guard < 10000 {
+        count = 0;
+
+        for (ingredient_name, ingredient) in map.iter_mut() {
+            if ingredient.allergens.is_empty() {
+                continue;
+            }
+
+            if ingredient.allergens.len() == 1 {
+                // single item max that's unique
+                let (allergen, _) = ingredient.allergens.iter().next().unwrap();
+                found.insert(*allergen, *ingredient_name);
+            } else {
+                count += 1;
+                ingredient.allergens.retain(|allergen, _count| {
+                    if let Some(name) = found.get(allergen) {
+                        name == ingredient_name
+                    } else {
+                        true
+                    }
+                });
+            }
+        }
+
+        guard += 1;
+    }
+}
+
 /// return count of allergen free ingredient appearances
 pub fn one(file_path: &str) -> usize {
     let input = read_file(file_path);
     let mut map = parse(&input);
     retain_maxes(&mut map);
+    find_unique_allergens(&mut map);
 
     todo!();
 }
