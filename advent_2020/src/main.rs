@@ -75,4 +75,5 @@ fn main() {
         "21-1",
         day_21::one
     );
+    show!("21-2", "Allergenic ingredient list", "21-1", day_21::two);
 }

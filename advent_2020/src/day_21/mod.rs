@@ -169,7 +169,29 @@ pub fn one(file_path: &str) -> usize {
 
 /// returns list of allergen containing ingredients sorted by allergen
 pub fn two(file_path: &str) -> String {
-    todo()!;
+    let input = read_file(file_path);
+    let mut map = parse(&input);
+    retain_maxes(&mut map);
+    find_unique_allergens(&mut map);
+
+    let mut dangerous_ingredients = map
+        .into_iter()
+        .filter_map(|(name, ingredient)| {
+            if ingredient.allergens.is_empty() {
+                None
+            } else {
+                let (allergen, _) = ingredient.allergens.into_iter().next().unwrap();
+                Some((name, allergen))
+            }
+        })
+        .collect::<Vec<_>>();
+    dangerous_ingredients.sort_unstable_by(|a, b| a.1.cmp(b.1));
+
+    dangerous_ingredients
+        .into_iter()
+        .map(|(ingredient, _)| ingredient)
+        .collect::<Vec<_>>()
+        .join(",")
 }
 
 #[cfg(test)]
