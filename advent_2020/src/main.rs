@@ -69,4 +69,10 @@ fn main() {
     show!("19-2", "Messages that match rule 0", "19-1", day_19::two);
     show!("20-1", "Product of corner tile IDs", "20-1", day_20::one);
     show!("20-2", "Water roughness", "20-1", day_20::two);
+    show!(
+        "21-1",
+        "Allergen free ingredient appearances",
+        "21-1",
+        day_21::one
+    );
 }

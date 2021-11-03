@@ -156,7 +156,15 @@ pub fn one(file_path: &str) -> usize {
     retain_maxes(&mut map);
     find_unique_allergens(&mut map);
 
-    todo!();
+    map.iter()
+        .filter_map(|(_, ingredient)| {
+            if ingredient.allergens.is_empty() {
+                Some(ingredient.appearances)
+            } else {
+                None
+            }
+        })
+        .sum()
 }
 
 #[cfg(test)]
