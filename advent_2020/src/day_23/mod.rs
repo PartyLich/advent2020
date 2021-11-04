@@ -2,6 +2,9 @@
 //! --- Day 23: Crab Cups ---
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 type State = Vec<usize>;
 
 /// parse cup state from str
