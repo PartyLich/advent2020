@@ -16,7 +16,7 @@ struct Ingredient<'a> {
 }
 
 /// parse str input into an ingredient/allergen map
-fn parse(input: &str) -> HashMap<&str, Ingredient> {
+fn parse(input: &str) -> (HashMap<&str, Ingredient>, HashMap<&str, usize>) {
     input
         .lines()
         .map(|line| {
@@ -34,54 +34,41 @@ fn parse(input: &str) -> HashMap<&str, Ingredient> {
 
             ingredients
         })
-        .fold(HashMap::new(), |mut acc, next| {
-            let ingredients = next;
+        .fold(
+            (HashMap::new(), HashMap::new()),
+            |(mut acc, mut maxes), next| {
+                let ingredients = next;
 
-            for (ingredient_name, allergens) in ingredients {
-                let ingredient = acc.entry(ingredient_name).or_default();
-                ingredient.appearances += 1;
+                for (ingredient_name, allergens) in ingredients {
+                    let ingredient = acc.entry(ingredient_name).or_default();
+                    ingredient.appearances += 1;
 
-                // update entry
-                for a in allergens {
-                    let count = ingredient.allergens.entry(a).or_default();
-                    *count += 1;
+                    // update entry
+                    for a in allergens {
+                        let count = ingredient.allergens.entry(a).or_default();
+                        *count += 1;
 
-                    if *count > ingredient.max.1 {
-                        ingredient.max = (a, *count);
+                        if *count > ingredient.max.1 {
+                            ingredient.max = (a, *count);
+                        }
+
+                        // update maxes
+                        let max = maxes.entry(a).or_default();
+                        if *count > *max {
+                            *max = *count;
+                        }
                     }
                 }
-            }
 
-            acc
-        })
+                (acc, maxes)
+            },
+        )
 }
 
 /// retain only allergens equal to the max for each ingredient
 ///
 /// eg if foo is associated with Dairy twice and Fish once, keep only Dairy
-fn retain_maxes(map: &mut HashMap<&str, Ingredient>) {
-    let mut maxes = HashMap::new();
-
-    for ingredient in map.values_mut() {
-        let (max_name, max) = ingredient.max;
-        ingredient.allergens.iter().for_each(|(min_name, min)| {
-            // update global max for allergen
-            if *min_name == max_name {
-                let global_max = maxes.entry(max_name).or_insert(max);
-                if max > *global_max {
-                    *global_max = max;
-                }
-
-                return;
-            }
-
-            let global_max = maxes.entry(min_name).or_insert(*min);
-            if *min > *global_max {
-                *global_max = *min;
-            }
-        })
-    }
-
+fn retain_maxes(map: &mut HashMap<&str, Ingredient>, maxes: &HashMap<&str, usize>) {
     // remove any allergen associated less than max
     for ingredient in map.values_mut() {
         ingredient.allergens.retain(|name, count| {
@@ -152,8 +139,8 @@ fn logic_grid(map: &HashMap<&str, Ingredient>, allergens: &HashSet<&str>) {
 /// return count of allergen free ingredient appearances
 pub fn one(file_path: &str) -> usize {
     let input = read_file(file_path);
-    let mut map = parse(&input);
-    retain_maxes(&mut map);
+    let (mut map, maxes) = parse(&input);
+    retain_maxes(&mut map, &maxes);
     find_unique_allergens(&mut map);
 
     map.iter()
@@ -170,8 +157,8 @@ pub fn one(file_path: &str) -> usize {
 /// returns list of allergen containing ingredients sorted by allergen
 pub fn two(file_path: &str) -> String {
     let input = read_file(file_path);
-    let mut map = parse(&input);
-    retain_maxes(&mut map);
+    let (mut map, maxes) = parse(&input);
+    retain_maxes(&mut map, &maxes);
     find_unique_allergens(&mut map);
 
     let mut dangerous_ingredients = map
