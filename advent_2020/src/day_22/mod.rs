@@ -3,6 +3,8 @@
 use std::collections::VecDeque;
 use std::num::ParseIntError;
 
+use crate::day_1::read_file;
+
 /// A deck of playing cards
 type Deck = VecDeque<usize>;
 
@@ -52,7 +54,24 @@ fn play_round((mut deck1, mut deck2): (Deck, Deck)) -> Game {
 
 /// returns the winning score from a game of 'Combat'
 pub fn one(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let mut decks: Vec<_> = input
+        .split("\n\n")
+        .map(parse)
+        .collect::<Result<Vec<_>, _>>()
+        .expect("Failed to parse input decks");
+
+    let mut decks = Game::InProgress((decks.remove(0), decks.remove(0)));
+    loop {
+        match decks {
+            Game::Complete(winning_deck) => {
+                return get_score(&Vec::from(winning_deck));
+            }
+            Game::InProgress(next) => {
+                decks = play_round(next);
+            }
+        }
+    }
 }
 
 #[cfg(test)]
