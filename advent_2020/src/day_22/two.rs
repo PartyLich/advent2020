@@ -27,6 +27,37 @@ impl Game {
             previous_decks: Default::default(),
         }
     }
+
+    /// play rounds until the game is complete
+    pub fn resolve(mut self) -> GameResult {
+        loop {
+            match self {
+                Self::InProgress {
+                    decks,
+                    previous_decks,
+                } => {
+                    // if there was a previous round in this game that had exactly the same cards in
+                    // the same order in the same players' decks, the game instantly ends in a win
+                    // for player 1.
+                    if previous_decks.0.contains(&decks.0) || previous_decks.1.contains(&decks.1) {
+                        return (1, decks.0);
+                    }
+
+                    self = play_round(previous_decks, decks);
+                }
+                Self::Complete(result) => {
+                    return result;
+                }
+            }
+        }
+    }
+}
+
+fn play_round(
+    mut previous_decks: (HashSet<Deck>, HashSet<Deck>),
+    (mut deck1, mut deck2): (Deck, Deck),
+) -> Game {
+    todo!();
 }
 
 /// returns the winning score from a game of 'Combat'
