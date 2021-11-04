@@ -1,5 +1,12 @@
 //! Solutions to 2020 day 22 problems
 //! --- Day 22: Crab Combat ---
+use std::collections::VecDeque;
+use std::num::ParseIntError;
+
+/// parse a deck from a str
+fn parse(input: &str) -> Result<VecDeque<usize>, ParseIntError> {
+    input.lines().skip(1).map(|line| line.parse()).collect()
+}
 
 /// returns a deck's score
 fn get_score(deck: &[usize]) -> usize {
