@@ -17,6 +17,13 @@ enum Game {
     Complete(Deck),
 }
 
+impl Game {
+    /// create a new game of Combat
+    pub fn new(deck1: Deck, deck2: Deck) -> Self {
+        Self::InProgress((deck1, deck2))
+    }
+}
+
 /// parse a deck from a str
 fn parse(input: &str) -> Result<VecDeque<usize>, ParseIntError> {
     input.lines().skip(1).map(|line| line.parse()).collect()
@@ -61,14 +68,14 @@ pub fn one(file_path: &str) -> usize {
         .collect::<Result<Vec<_>, _>>()
         .expect("Failed to parse input decks");
 
-    let mut decks = Game::InProgress((decks.remove(0), decks.remove(0)));
+    let mut game = Game::new(decks.remove(0), decks.remove(0));
     loop {
-        match decks {
+        match game {
             Game::Complete(winning_deck) => {
                 return get_score(&Vec::from(winning_deck));
             }
             Game::InProgress(next) => {
-                decks = play_round(next);
+                game = play_round(next);
             }
         }
     }
