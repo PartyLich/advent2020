@@ -2,7 +2,9 @@
 //! --- Day 22: Crab Combat ---
 use std::collections::HashSet;
 
-use super::Deck;
+use crate::day_1::read_file;
+
+use super::{get_score, parse, Deck};
 
 /// Completed game state, as a (winner index, winning deck) pair
 type GameResult = (usize, Deck);
@@ -107,7 +109,16 @@ fn play_round(
 
 /// returns the winning score from a game of 'Combat'
 pub fn two(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let mut decks: Vec<_> = input
+        .split("\n\n")
+        .map(parse)
+        .collect::<Result<Vec<_>, _>>()
+        .expect("Failed to parse input decks");
+    let game = Game::new(decks.remove(0), decks.remove(0));
+    let (_winner, winning_deck) = game.resolve();
+
+    get_score(&Vec::from(winning_deck))
 }
 
 #[cfg(test)]
