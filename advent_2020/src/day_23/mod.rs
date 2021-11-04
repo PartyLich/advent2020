@@ -1,5 +1,7 @@
 //! Solutions to 2020 day 23 problems
 //! --- Day 23: Crab Cups ---
+use crate::day_1::read_file;
+
 type State = Vec<usize>;
 
 /// parse cup state from str
@@ -54,9 +56,35 @@ fn step(mut state: State) -> State {
     state
 }
 
+/// Starting after the cup labeled 1, collects the other cups' labels clockwise into a single string
+/// with no extra characters
+fn format_result(mut state: State) -> String {
+    let one_idx = state
+        .iter()
+        .enumerate()
+        .find(|(_, label)| **label == 1)
+        .map(|(idx, _)| idx)
+        .unwrap();
+    state.rotate_left(one_idx);
+
+    state
+        .into_iter()
+        .skip(1)
+        .map(|digit| digit.to_string())
+        .collect()
+}
+
 /// should return the ordered cup labels after cup 1 following 100 steps
 pub fn one(file_path: &str) -> String {
-    todo!();
+    const STEPS: usize = 100;
+    let input = read_file(file_path);
+    let mut cups = parse(&input).expect("Failed to parse initial cup state");
+
+    for _ in 0..STEPS {
+        cups = step(cups);
+    }
+
+    format_result(cups)
 }
 
 #[cfg(test)]
