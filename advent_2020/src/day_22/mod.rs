@@ -3,6 +3,18 @@
 use std::collections::VecDeque;
 use std::num::ParseIntError;
 
+/// A deck of playing cards
+type Deck = VecDeque<usize>;
+
+/// Combat game state
+#[derive(Debug)]
+enum Game {
+    /// Game with rounds remaining to be played
+    InProgress((Deck, Deck)),
+    /// Game that has been won
+    Complete(Deck),
+}
+
 /// parse a deck from a str
 fn parse(input: &str) -> Result<VecDeque<usize>, ParseIntError> {
     input.lines().skip(1).map(|line| line.parse()).collect()
