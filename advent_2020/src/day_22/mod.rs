@@ -5,6 +5,9 @@ use std::num::ParseIntError;
 
 use crate::day_1::read_file;
 
+mod two;
+pub use two::two;
+
 /// A deck of playing cards
 type Deck = VecDeque<usize>;
 
