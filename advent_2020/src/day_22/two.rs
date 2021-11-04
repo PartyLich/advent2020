@@ -53,11 +53,56 @@ impl Game {
     }
 }
 
+/// play a round of 'Recursive Combat' with the two provided decks
+///
+/// See [AoC 2020 Day 22 part 2](https://adventofcode.com/2020/day/22#part2) for game rules
 fn play_round(
     mut previous_decks: (HashSet<Deck>, HashSet<Deck>),
     (mut deck1, mut deck2): (Deck, Deck),
 ) -> Game {
-    todo!();
+    previous_decks.0.insert(deck1.clone());
+    previous_decks.1.insert(deck2.clone());
+
+    // draw top cards
+    deck1.pop_front().map(|card1| {
+        deck2.pop_front().map(|card2| {
+            if deck1.len() >= card1 && deck2.len() >= card2 {
+                // the winner of the round is determined by playing a new sub-game
+                let subdeck1 = deck1.iter().copied().take(card1).collect();
+                let subdeck2 = deck2.iter().copied().take(card2).collect();
+                let sub_game = Game::new(subdeck1, subdeck2);
+
+                match sub_game.resolve() {
+                    (1, _) => {
+                        deck1.extend([card1, card2]);
+                    }
+                    (2, _) => {
+                        deck2.extend([card2, card1]);
+                    }
+                    _ => panic!("Invalid game result"),
+                }
+            } else {
+                // the winner of the round is the player with the higher-value card.
+                if card1 > card2 {
+                    deck1.extend([card1, card2]);
+                } else {
+                    deck2.extend([card2, card1]);
+                }
+            }
+        })
+    });
+
+    if deck1.is_empty() {
+        return Game::Complete((2, deck2));
+    }
+    if deck2.is_empty() {
+        return Game::Complete((1, deck1));
+    }
+
+    Game::InProgress {
+        decks: (deck1, deck2),
+        previous_decks,
+    }
 }
 
 /// returns the winning score from a game of 'Combat'
