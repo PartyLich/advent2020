@@ -76,4 +76,6 @@ fn main() {
         day_21::one
     );
     show!("21-2", "Allergenic ingredient list", "21-1", day_21::two);
+    show!("22-1", "Combat score", "22-1", day_22::one);
+    show!("22-2", "Recursive Combat score", "22-1", day_22::two);
 }
