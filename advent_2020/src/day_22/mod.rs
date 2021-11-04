@@ -29,6 +29,27 @@ fn get_score(deck: &[usize]) -> usize {
         .fold(0, |acc, (idx, value)| acc + (value * (size - idx)))
 }
 
+/// play a round of 'Combat' with the two provided decks
+fn play_round((mut deck1, mut deck2): (Deck, Deck)) -> Game {
+    deck1.pop_front().map(|card1| {
+        deck2.pop_front().map(|card2| {
+            if card1 > card2 {
+                deck1.extend([card1, card2]);
+            } else {
+                deck2.extend([card2, card1]);
+            }
+        })
+    });
+
+    if deck1.is_empty() {
+        return Game::Complete(deck2);
+    }
+    if deck2.is_empty() {
+        return Game::Complete(deck1);
+    }
+    Game::InProgress((deck1, deck2))
+}
+
 /// returns the winning score from a game of 'Combat'
 pub fn one(file_path: &str) -> usize {
     todo!();
