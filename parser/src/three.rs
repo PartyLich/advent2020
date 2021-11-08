@@ -236,7 +236,7 @@ pub mod three {
 
     /// Define the current parser input state
     #[derive(Debug, Default, Clone)]
-    struct InputState<'a> {
+    pub struct InputState<'a> {
         lines: Vec<&'a str>,
         position: Position,
     }
@@ -379,7 +379,7 @@ pub mod three {
     }
 
     /// Return the String representation of a ParseResult
-    fn print_result<O>(result: ParseResult<O>) -> String
+    pub fn print_result<O>(result: &ParseResult<O>) -> String
     where
         O: std::fmt::Debug,
     {
