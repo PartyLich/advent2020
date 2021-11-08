@@ -45,7 +45,14 @@ impl FromStr for Direction {
 
 /// assemble tile layout from a list of instructions
 fn assemble(instructions: Vec<Direction>) -> HashMap<Direction, bool> {
-    todo!()
+    instructions
+        .into_iter()
+        .fold(Default::default(), |mut acc, next| {
+            let tile = acc.entry(next).or_insert(false);
+            *tile = !*tile;
+
+            acc
+        })
 }
 
 /// returns the number of black tiles after executing flip instructions
