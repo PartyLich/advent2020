@@ -1,6 +1,9 @@
 //! Solutions to 2020 day 24 problems
 //! --- Day 24: Lobby Layout ---
+use std::collections::HashMap;
 use std::ops::Add;
+
+use crate::day_1::read_file;
 
 /// Hexagonal tile neighbor direction
 #[derive(Debug, Eq, Hash, PartialEq)]
@@ -14,9 +17,24 @@ impl Add for Direction {
     }
 }
 
+/// assemble tile layout from a list of instructions
+fn assemble(instructions: Vec<Direction>) -> HashMap<Direction, bool> {
+    todo!()
+}
+
 /// returns the number of black tiles after executing flip instructions
 pub fn one(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let instructions = input
+        .lines()
+        .map(Direction::from_str)
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+
+    assemble(instructions)
+        .values()
+        .filter(|tile| **tile)
+        .count()
 }
 
 #[cfg(test)]
