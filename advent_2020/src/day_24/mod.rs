@@ -1,6 +1,6 @@
 //! Solutions to 2020 day 24 problems
 //! --- Day 24: Lobby Layout ---
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::Add;
 use std::str::FromStr;
 
@@ -9,7 +9,7 @@ use parser::three::three::{choice, one_or_more, p_char};
 use crate::day_1::read_file;
 
 /// Hexagonal tile neighbor direction
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct Direction(isize, isize);
 
 impl Add for Direction {
@@ -70,9 +70,77 @@ pub fn one(file_path: &str) -> usize {
         .count()
 }
 
+/// count active neighbors for a given position
+fn count_neighbors(map: &HashSet<Direction>, pos: Direction) -> usize {
+    let neighbors = [
+        // w
+        pos + Direction(-1, 0),
+        // nw
+        pos + Direction(0, -1),
+        // sw
+        pos + Direction(-1, 1),
+        // e
+        pos + Direction(1, 0),
+        // ne
+        pos + Direction(1, -1),
+        // se
+        pos + Direction(0, 1),
+    ];
+
+    let mut count = 0;
+    for neighbor in neighbors {
+        if map.contains(&neighbor) {
+            count += 1;
+        }
+    }
+
+    count
+}
+
 /// update a tile set according to the daily rules
-fn flip_tiles(mut map: HashMap<Direction, bool>) -> HashMap<Direction, bool> {
-    todo!()
+fn flip_tiles(map: HashSet<Direction>) -> HashSet<Direction> {
+    let mut result = HashSet::new();
+
+    fn helper(map: &HashSet<Direction>, pos: Direction, is_black: bool) -> Option<Direction> {
+        let count = count_neighbors(map, pos);
+        // Any black tile with zero or more than 2 black tiles immediately adjacent to it is flipped
+        // to white.
+        if (is_black && (1..=2).contains(&count) )
+            // Any white tile with exactly 2 black tiles immediately adjacent to it is flipped to
+            // black.
+        || count == 2
+        {
+            Some(pos)
+        } else {
+            None
+        }
+    }
+
+    for pos in map.iter() {
+        let neighbors = [
+            // self
+            *pos,
+            // w
+            *pos + Direction(-1, 0),
+            // nw
+            *pos + Direction(0, -1),
+            // sw
+            *pos + Direction(-1, 1),
+            // e
+            *pos + Direction(1, 0),
+            // ne
+            *pos + Direction(1, -1),
+            // se
+            *pos + Direction(0, 1),
+        ];
+
+        let active = neighbors
+            .iter()
+            .filter_map(|pos| helper(&map, *pos, map.contains(pos)));
+        result.extend(active);
+    }
+
+    result
 }
 
 /// returns the number of black tiles after 100 days of flips
@@ -83,13 +151,16 @@ pub fn two(file_path: &str) -> usize {
         .map(Direction::from_str)
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
-    let mut tile_map = assemble(instructions);
+    let mut tile_map: HashSet<Direction> = assemble(instructions)
+        .into_iter()
+        .filter_map(|(pos, is_black)| if is_black { Some(pos) } else { None })
+        .collect();
 
     for _ in 0..100 {
         tile_map = flip_tiles(tile_map);
     }
 
-    tile_map.values().filter(|tile| **tile).count()
+    tile_map.len()
 }
 
 #[cfg(test)]
