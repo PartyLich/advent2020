@@ -8,17 +8,36 @@ use super::*;
 // manipulate anything that isnt touched
 type Cups = HashMap<usize, usize>;
 
+/// (cup state, current cup label, max label, left shifts)
+type State = (Cups, usize, usize, usize);
+
 /// parse cup state from str
-fn parse(input: &str) -> Result<Cups, String> {
-    input
+// fn parse(input: &str) -> Result<Cups, String> {
+fn parse(input: &str) -> Result<State, String> {
+    let mut first = None;
+    let mut max = 1;
+    let cups = input
         .trim()
         .char_indices()
         .map(|(idx, ch)| {
-            ch.to_digit(10)
+            let cup = ch
+                .to_digit(10)
                 .map(|d| (d as usize, idx))
-                .ok_or(format!("Failed to parse digit {}", ch))
+                .ok_or(format!("Failed to parse digit {}", ch))?;
+
+            if first.is_none() {
+                first = Some(cup.0);
+            }
+
+            if cup.0 > max {
+                max = cup.0;
+            }
+
+            Ok(cup)
         })
-        .collect()
+        .collect::<Result<Cups, String>>()?;
+
+    Ok((cups, first.unwrap(), max, 0))
 }
 
 /// returns the product of the two cup labels immediately clockwise of cup 1 after ten million
