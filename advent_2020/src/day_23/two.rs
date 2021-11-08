@@ -40,6 +40,20 @@ fn parse(input: &str) -> Result<State, String> {
     Ok((cups, first.unwrap(), max, 0))
 }
 
+fn rotate_left(map: &mut Cups, units: usize, len: usize) {
+    if map.is_empty() {
+        return;
+    }
+
+    for (_label, idx) in map.iter_mut() {
+        if *idx >= units {
+            *idx -= units;
+        } else if *idx < units {
+            *idx = len - (units - *idx);
+        }
+    }
+}
+
 /// returns the product of the two cup labels immediately clockwise of cup 1 after ten million
 /// steps
 pub fn two(file_path: &str) -> usize {
