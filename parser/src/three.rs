@@ -427,10 +427,10 @@ pub mod three {
         /// Lift a value to a context
         pub fn of(value: O) -> Self
         where
-            O: Clone + fmt::Debug,
+            O: Clone,
         {
             Parser {
-                label: format!("{:?}", value),
+                label: "unknown".to_string(),
                 parse: Rc::new(move |input: InputState| {
                     // ignore the input and return value
                     Ok((input, value.clone()))
@@ -477,11 +477,20 @@ pub mod three {
     // more idiomatic than `of` in Rust
     impl<'a, O: 'a> From<O> for Parser<'a, O>
     where
-        O: Clone + fmt::Debug,
+        O: Clone,
     {
         fn from(value: O) -> Self {
             Parser::of(value)
         }
+    }
+
+    /// apply the function contents of one functor to the value contents of another functor
+    pub fn apply<'a, A: 'a, B: 'a>(
+        f: Parser<'a, Rc<impl Fn(A) -> B + 'a + ?Sized>>,
+        x: Parser<'a, A>,
+    ) -> Parser<'a, B> {
+        let fx = and_then(f, x);
+        fx.map(|(f, x)| f(x))
     }
 
     /// Combine two parsers as "A andThen B"
@@ -997,6 +1006,20 @@ A
                 .to_string();
             let actual = parse_float.parse("-123Z45");
             assert_eq!(print_result(actual), expected, "{}", msg);
+        }
+
+        #[test]
+        fn ap() {
+            let msg = "should apply values in context";
+
+            let fx = Parser::from(Rc::new(|a: i32| Rc::new(move |b| a + b)));
+            let a = Parser::from(22);
+            let b = Parser::from(20);
+
+            let expected = 42;
+            let actual = apply(fx, a);
+            let (_, actual) = apply(actual, b).parse("").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
         }
     }
 }
