@@ -70,9 +70,26 @@ pub fn one(file_path: &str) -> usize {
         .count()
 }
 
+/// update a tile set according to the daily rules
+fn flip_tiles(mut map: HashMap<Direction, bool>) -> HashMap<Direction, bool> {
+    todo!()
+}
+
 /// returns the number of black tiles after 100 days of flips
 pub fn two(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let instructions = input
+        .lines()
+        .map(Direction::from_str)
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    let mut tile_map = assemble(instructions);
+
+    for _ in 0..100 {
+        tile_map = flip_tiles(tile_map);
+    }
+
+    tile_map.values().filter(|tile| **tile).count()
 }
 
 #[cfg(test)]
