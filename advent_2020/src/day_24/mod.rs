@@ -70,6 +70,11 @@ pub fn one(file_path: &str) -> usize {
         .count()
 }
 
+/// returns the number of black tiles after 100 days of flips
+pub fn two(file_path: &str) -> usize {
+    todo!();
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -91,6 +96,14 @@ mod test {
         let msg = "should count the number black tiles";
         let expected = 10;
         let actual = one("input/24-t.txt");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn part_two() {
+        let msg = "should count the number black tiles";
+        let expected = 2208;
+        let actual = two("input/24-t.txt");
         assert_eq!(actual, expected, "{}", msg);
     }
 }
