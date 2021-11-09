@@ -1,5 +1,6 @@
 //! Solutions to 2020 day 24 problems
 //! --- Day 25: Combo Breaker ---
+use crate::day_1::read_file;
 
 /// transform a subject number
 fn transform(subject: usize, value: Option<usize>) -> usize {
@@ -37,7 +38,30 @@ fn size_finder(subject: usize) -> impl FnMut(usize) -> usize {
 
 /// returns the encryption key
 pub fn one(file_path: &str) -> usize {
-    todo!();
+    let input = read_file(file_path);
+    let mut pkey_iter = input
+        .lines()
+        .map(|line| usize::from_str_radix(line, 10).unwrap());
+    let (card_pkey, door_pkey) = (pkey_iter.next().unwrap(), pkey_iter.next().unwrap());
+
+    let mut loop_size = size_finder(7);
+    let card_loop_size = loop_size(card_pkey);
+    let door_loop_size = loop_size(door_pkey);
+
+    // start with the value 1.
+    // Then, a number of times called the loop size, transform the value
+    let mut encryption_key = 1;
+    if card_loop_size < door_loop_size {
+        for _ in 0..card_loop_size {
+            encryption_key = transform(door_pkey, Some(encryption_key));
+        }
+    } else {
+        for _ in 0..door_loop_size {
+            encryption_key = transform(card_pkey, Some(encryption_key));
+        }
+    }
+
+    encryption_key
 }
 
 #[cfg(test)]
