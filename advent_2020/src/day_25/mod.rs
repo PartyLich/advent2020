@@ -11,6 +11,30 @@ fn transform(subject: usize, value: Option<usize>) -> usize {
     result % 20201227
 }
 
+/// returns a fn that calculates loop size for a given target value, using the provided subject num
+fn size_finder(subject: usize) -> impl FnMut(usize) -> usize {
+    let mut cache = vec![];
+
+    move |key| {
+        let mut value = 1;
+
+        for i in 0.. {
+            if let Some(cached) = cache.get(i) {
+                value = *cached;
+            } else {
+                value = transform(subject, Some(value));
+                cache.push(value);
+            }
+
+            if value == key {
+                return i + 1;
+            }
+        }
+
+        panic!("Finished an infinite loop");
+    }
+}
+
 /// returns the encryption key
 pub fn one(file_path: &str) -> usize {
     todo!();
@@ -31,6 +55,20 @@ mod test {
             }
             result
         };
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn find_loop_size() {
+        let msg = "should calculate the loop size for a given key";
+        let expected = 8;
+        let mut loop_size = size_finder(7);
+        let actual = loop_size(5764801);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let expected = 11;
+        let mut loop_size = size_finder(7);
+        let actual = loop_size(17807724);
         assert_eq!(actual, expected, "{}", msg);
     }
 
