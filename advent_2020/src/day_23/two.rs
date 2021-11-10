@@ -52,6 +52,10 @@ fn step((mut cups, current_label): State) -> State {
     }
     while removed.contains(&dest_label) {
         dest_label -= 1;
+
+        if dest_label < 1 {
+            dest_label = 1_000_000;
+        }
     }
 
     // update links
