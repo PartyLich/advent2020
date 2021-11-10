@@ -272,7 +272,7 @@ pub mod three {
     /// Get the next character from the input, if any, otherwise return None.
     /// Also return the updated InputState
     /// InputState -> InputState * char option
-    fn next_char<'a>(input: InputState<'a>) -> (InputState<'a>, Option<char>) {
+    fn next_char(input: InputState<'_>) -> (InputState<'_>, Option<char>) {
         let line_pos = input.position.line;
         let col_pos = input.position.column;
         // three cases
@@ -652,13 +652,13 @@ pub mod three {
 
     /// Parses a sequence of zero or more chars with the char parser cp.
     /// It returns the parsed chars as a string.
-    pub fn many_chars<'a>(cp: Parser<'a, char>) -> Parser<'a, String> {
+    pub fn many_chars(cp: Parser<'_, char>) -> Parser<'_, String> {
         many(cp).map(String::from_iter)
     }
 
     /// Parses a sequence of one or more chars with the char parser cp.
     /// It returns the parsed chars as a string.
-    pub fn one_or_more_chars<'a>(cp: Parser<'a, char>) -> Parser<'a, String> {
+    pub fn one_or_more_chars(cp: Parser<'_, char>) -> Parser<'_, String> {
         one_or_more(cp).map(String::from_iter)
     }
 
