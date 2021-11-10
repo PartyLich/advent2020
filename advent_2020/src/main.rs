@@ -79,6 +79,7 @@ fn main() {
     show!("22-1", "Combat score", "22-1", day_22::one);
     show!("22-2", "Recursive Combat score", "22-1", day_22::two);
     show!("23-1", "Cup labels", "23-1", day_23::one);
+    show!("23-2", "Cup label product", "23-1", day_23::two);
     show!("24-1", "Black tiles", "24-1", day_24::one);
     show!("24-2", "Black tiles", "24-1", day_24::two);
     show!("25-1", "Encryption key", "25-1", day_25::one);
