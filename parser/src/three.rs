@@ -634,6 +634,52 @@ pub mod three {
         }
     }
 
+    /// Keep only the result of the left side parser
+    pub fn keep_first<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, T> {
+        // create a pair
+        and_then(p1, p2)
+            // then only keep the first value
+            .map(|(a, _b)| a)
+    }
+
+    /// Keep only the result of the right side parser
+    pub fn keep_second<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, U> {
+        // create a pair
+        and_then(p1, p2)
+            // then only keep the second value
+            .map(|(_a, b)| b)
+    }
+
+    /// Keep only the result of the middle parser
+    pub fn between<'a, T: 'a, U: 'a, V: 'a>(
+        p1: Parser<'a, T>,
+        p2: Parser<'a, U>,
+        p3: Parser<'a, V>,
+    ) -> Parser<'a, U> {
+        keep_first(keep_second(p1, p2), p3)
+    }
+
+    /// Parses one or more occurrences of parser separated by separator
+    pub fn sep_by_one<'a, T: 'a, U: 'a>(
+        parser: Parser<'a, T>,
+        separator: Parser<'a, U>,
+    ) -> Parser<'a, Vec<T>> {
+        let sep_then_p = keep_second(separator, parser.clone());
+        parser.and_then(many(sep_then_p)).map(|(first, mut rest)| {
+            // prepend
+            rest.splice(0..0, [first]);
+            rest
+        })
+    }
+
+    /// Parses zero or more occurrences of parser separated by separator
+    pub fn sep_by<'a, T: 'a + Clone, U: 'a>(
+        parser: Parser<'a, T>,
+        separator: Parser<'a, U>,
+    ) -> Parser<'a, Vec<T>> {
+        sep_by_one(parser, separator).or_else(Parser::of(vec![]))
+    }
+
     // 3-4. Adding some standard parsers to the library
 
     /// Parse a single character
@@ -1021,6 +1067,70 @@ A
             let expected = 42;
             let actual = apply(fx, a);
             let (_, actual) = apply(actual, b).parse("").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn keeps_first() {
+            let msg = "should keep the results of the first parser";
+
+            let digit = p_int(10);
+            let digit_then_semicolon = keep_first(digit, optional(p_char(';')));
+
+            let expected = 1;
+            let (_, actual) = digit_then_semicolon.parse("1;").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let (_, actual) = digit_then_semicolon.parse("1").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let whitespace_char = any_of([' ', '\t', '\n']);
+            let whitespace = one_or_more(whitespace_char);
+
+            let ab = p_string("AB");
+            let cd = p_string("CD");
+            let ab_cd = and_then(keep_first(ab, whitespace), cd);
+
+            let expected = ("AB".to_string(), "CD".to_string());
+            let (_, actual) = ab_cd.parse("AB \t\nCD").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn inbetween() {
+            let msg = "should keep the results of the middle parser";
+
+            let double_quote = p_char('"');
+            let quoted_integer = between(double_quote.clone(), p_int(10), double_quote);
+
+            let expected = 1234;
+            let (_, actual) = quoted_integer.parse("\"1234\"").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+        }
+
+        #[test]
+        fn separators() {
+            let msg = "should parse separated values";
+
+            let digit = p_int(10);
+            let comma = p_char(',');
+            let zero_or_more_digit_list = sep_by(digit.clone(), comma.clone());
+            let one_or_more_digit_list = sep_by_one(digit, comma);
+
+            let expected = vec![1];
+            let (_, actual) = one_or_more_digit_list.parse("1;").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec![1, 2, 3];
+            let (_, actual) = one_or_more_digit_list.parse("1,2,3;").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec![1, 2, 3];
+            let (_, actual) = zero_or_more_digit_list.parse("1,2,3;").unwrap();
+            assert_eq!(actual, expected, "{}", msg);
+
+            let expected = vec![];
+            let (_, actual) = zero_or_more_digit_list.parse("Z;").unwrap();
             assert_eq!(actual, expected, "{}", msg);
         }
     }
