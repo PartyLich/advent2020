@@ -39,9 +39,7 @@ fn size_finder(subject: usize) -> impl FnMut(usize) -> usize {
 /// returns the encryption key
 pub fn one(file_path: &str) -> usize {
     let input = read_file(file_path);
-    let mut pkey_iter = input
-        .lines()
-        .map(|line| usize::from_str_radix(line, 10).unwrap());
+    let mut pkey_iter = input.lines().map(|line| line.parse::<usize>().unwrap());
     let (card_pkey, door_pkey) = (pkey_iter.next().unwrap(), pkey_iter.next().unwrap());
 
     let mut loop_size = size_finder(7);
