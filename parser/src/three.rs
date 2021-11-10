@@ -791,7 +791,7 @@ pub mod three {
             let expected = r#"Line:1 Col:6 Error parsing identifier
 123 ab|cd
       ^unexpected |"#;
-            let actual = print_result(ex_err);
+            let actual = print_result(&ex_err);
             assert_eq!(actual, expected, "{}", msg);
         }
 
@@ -890,7 +890,7 @@ BCD
 ^Unexpected 'B'"#
                 .to_string();
             let actual = one_plus_a.parse("BCD");
-            assert_eq!(print_result(actual), expected, "{}", msg);
+            assert_eq!(print_result(&actual), expected, "{}", msg);
         }
 
         #[test]
@@ -924,13 +924,13 @@ B|C
             let msg = "should parse a string";
             let expected = "\"AB\"";
             let actual = p_string("AB").parse("ABC");
-            assert_eq!(print_result(actual), expected, "{}", msg);
+            assert_eq!(print_result(&actual), expected, "{}", msg);
 
             let expected = r#"Line:0 Col:1 Error parsing AB
 A|C
  ^Unexpected '|'"#;
             let actual = p_string("AB").parse("A|C");
-            assert_eq!(print_result(actual), expected, "{}", msg);
+            assert_eq!(print_result(&actual), expected, "{}", msg);
         }
 
         #[test]
@@ -963,7 +963,7 @@ A
 ^Unexpected 'A'"#
                 .to_string();
             let actual = spaces.parse("A");
-            assert_eq!(print_result(actual), expected, "{}", msg);
+            assert_eq!(print_result(&actual), expected, "{}", msg);
         }
 
         #[test]
@@ -985,7 +985,7 @@ A
  ^Unexpected 'Z'"#
                 .to_string();
             let actual = parse_int.parse("-Z123");
-            assert_eq!(print_result(actual), expected, "{}", msg);
+            assert_eq!(print_result(&actual), expected, "{}", msg);
         }
 
         #[test]
@@ -1007,7 +1007,7 @@ A
     ^Unexpected 'Z'"#
                 .to_string();
             let actual = parse_float.parse("-123Z45");
-            assert_eq!(print_result(actual), expected, "{}", msg);
+            assert_eq!(print_result(&actual), expected, "{}", msg);
         }
 
         #[test]
