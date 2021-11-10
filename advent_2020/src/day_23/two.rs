@@ -4,142 +4,84 @@ use std::collections::HashMap;
 
 use super::*;
 
-// we care about the indexes of items that have been acted on, but don't want to store or
-// manipulate anything that isnt touched
+// we care about labels. this item, and the label that follow it. A linked list (ish)
 type Cups = HashMap<usize, usize>;
 
-/// (cup state, current cup label, max label, left shifts)
-type State = (Cups, usize, usize, usize);
+/// (cup state, current cup label)
+type State = (Cups, usize);
 
 /// parse cup state from str
-// fn parse(input: &str) -> Result<Cups, String> {
 fn parse(input: &str) -> Result<State, String> {
     let mut first = None;
-    let mut max = 1;
-    let cups = input
+    let mut cups = input
         .trim()
         .char_indices()
-        .map(|(idx, ch)| {
-            let cup = ch
-                .to_digit(10)
-                .map(|d| (d as usize, idx))
-                .ok_or(format!("Failed to parse digit {}", ch))?;
+        .rev()
+        .scan(10, |next_cup, (idx, ch)| {
+            let label = ch.to_digit(10).map(|d| d as usize).unwrap();
+            let result = Some((label, *next_cup));
+            *next_cup = label;
 
-            if first.is_none() {
-                first = Some(cup.0);
+            if idx == 0 {
+                first = Some(label);
             }
 
-            if cup.0 > max {
-                max = cup.0;
-            }
-
-            Ok(cup)
+            result
         })
-        .collect::<Result<Cups, String>>()?;
+        .collect::<Cups>();
+    cups.insert(1_000_000, first.unwrap());
 
-    Ok((cups, first.unwrap(), max, 0))
-}
-
-fn rotate_left(map: &mut Cups, units: usize, len: usize) {
-    if map.is_empty() {
-        return;
-    }
-
-    for (_label, idx) in map.iter_mut() {
-        if *idx >= units {
-            *idx -= units;
-        } else if *idx < units {
-            *idx = len - (units - *idx);
-        }
-    }
+    Ok((cups, first.unwrap()))
 }
 
 /// execute a single step of the game and return the new state
-///
-/// Next cup is always at index 0
-fn step((mut state, current_label, mut max, mut shifts): State) -> State {
-    let current_idx = *state.get(&current_label).unwrap_or(&(current_label - 1));
-
-    if current_idx > 0 {
-        rotate_left(&mut state, current_idx, 1_000_000);
-        shifts += current_idx;
-    }
-
-    let mut removed: Vec<_> = state
-        .iter()
-        .filter(|(_label, idx)| (current_idx + 1..current_idx + 4).contains(idx))
-        .map(|(label, _idx)| *label)
-        .collect();
-    while removed.len() < 3 {
-        max += 1;
-        let index = removed.len() + 1;
-        state.insert(max, index);
-        removed.push(max);
-    }
-
-    let remaining = state
-        .iter()
-        .filter(|(_label, idx)| !(current_idx + 1..current_idx + 4).contains(idx));
+fn step((mut cups, current_label): State) -> State {
+    let removed_0 = *cups.entry(current_label).or_insert(current_label + 1);
+    let removed_1 = *cups.entry(removed_0).or_insert(removed_0 + 1);
+    let removed_2 = *cups.entry(removed_1).or_insert(removed_1 + 1);
+    let removed = [removed_0, removed_1, removed_2];
 
     // destination cup: the cup with a label equal to the current cup's label minus one.
     // If the destination label is not in the current set,
     //   - subtract one until a label is found OR
-    //   - if the value goes below the lowest value on any cup's label, select the highest value label
-    //     instead.
+    //   - if the value goes below the lowest value on any cup's label, select the highest value
+    //     label instead.
     let mut dest_label = current_label - 1;
-    let mut dest = None;
-    while dest_label > 0 && dest == None {
-        dest = remaining
-            .clone()
-            .find(|(label, _idx)| **label == dest_label)
-            .map(|(_label, idx)| idx);
+    if dest_label < 1 {
+        dest_label = 1_000_000;
+    }
+    while removed.contains(&dest_label) {
         dest_label -= 1;
     }
 
-    let dest = if dest.is_none() {
-        let mut max_dest = 999_999 - shifts;
-        while removed.contains(&&max_dest) {
-            max_dest -= 1;
-        }
-        max_dest
-    } else {
-        *dest.unwrap()
-    };
+    // update links
+    let tail = *cups.get(&dest_label).unwrap();
+    let after_removed = *cups.entry(removed_2).or_insert(removed_2 + 1);
+    cups.entry(current_label)
+        .and_modify(|next| *next = after_removed);
+    cups.entry(dest_label).and_modify(|next| *next = removed_0);
+    cups.entry(removed_2).and_modify(|next| *next = tail);
 
-    // update indices somehow
-    for (label, idx) in state.iter_mut() {
-        if removed.contains(&label) {
-            // insert
-            *idx += dest - 3;
-        } else {
-            // shift
-            if (4..=dest).contains(idx) {
-                *idx -= 3;
-            }
-        }
-    }
+    // find the next current cup
+    let next = *cups.get(&current_label).unwrap();
 
-    rotate_left(&mut state, 1, 1_000_000);
-    shifts += 1;
-
-    // find next current cup
-    let next = state
-        .iter()
-        .find_map(|(label, idx)| if *idx == 0 { Some(*label) } else { None })
-        .unwrap_or_else(|| {
-            max += 1;
-            // insert
-            state.insert(max, 0);
-            max
-        });
-
-    (state, next, max, shifts)
+    (cups, next)
 }
 
 /// returns the product of the two cup labels immediately clockwise of cup 1 after ten million
 /// steps
 pub fn two(file_path: &str) -> usize {
-    todo!();
+    const STEPS: usize = 10_000_000;
+    let input = read_file(file_path);
+    let mut state = parse(&input).expect("Failed to parse initial cup state");
+
+    for _ in 0..STEPS {
+        state = step(state);
+    }
+
+    let one = *state.0.get(&1).unwrap();
+    let two = *state.0.get(&one).unwrap();
+    one * two
 }
 
 #[cfg(test)]
