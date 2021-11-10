@@ -266,6 +266,10 @@ impl<'a, O: 'a> Parser<'a, O> {
     pub fn or_else(self, other: Parser<'a, O>) -> Self {
         or_else(self, other)
     }
+
+    pub fn bind<U: 'a>(self, f: impl Fn(O) -> Parser<'a, U> + 'a) -> Parser<'a, U> {
+        bind(self, f)
+    }
 }
 
 // more idiomatic than `of` in Rust
@@ -285,6 +289,24 @@ pub fn apply<'a, A: 'a, B: 'a>(
 ) -> Parser<'a, B> {
     let fx = and_then(f, x);
     fx.map(|(f, x)| f(x))
+}
+
+/// takes a parser-producing function `f` and a parser `p1`, and passes the output of `p1` into
+/// `f` to create a new parser
+pub fn bind<'a, T: 'a, U: 'a>(
+    p1: Parser<'a, T>,
+    f: impl Fn(T) -> Parser<'a, U> + 'a,
+) -> Parser<'a, U> {
+    Parser {
+        label: "unknown".to_string(),
+        parse: Rc::new(move |input: InputState| {
+            let (remaining, result1) = p1.parse_input(input)?;
+            // apply f to get a new parser
+            let p2 = f(result1);
+            // run parser with remaining input
+            p2.parse_input(remaining)
+        }),
+    }
 }
 
 /// Combine two parsers as "A andThen B"
@@ -921,6 +943,22 @@ A
 
         let expected = vec![];
         let (_, actual) = zero_or_more_digit_list.parse("Z;").unwrap();
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn binding() {
+        let msg = "should derive map via bind";
+
+        fn map<'a>(f: impl Fn(char) -> char + 'a) -> Parser<'a, char> {
+            let p = p_char('A');
+            bind(p.clone(), move |x| Parser::of(f(x)))
+        }
+
+        let lower_a = map(|ch: char| ch.to_lowercase().next().unwrap());
+
+        let expected = 'a';
+        let (_, actual) = lower_a.parse("A").unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 }
