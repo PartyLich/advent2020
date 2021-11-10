@@ -718,12 +718,12 @@ pub mod three {
             .with_label(label)
     }
 
+    type ParsedFloat = ((Option<char>, Vec<char>), char);
+
     // parse a float
     pub fn p_float<'a>(base: u32) -> Parser<'a, f64> {
         // helper
-        fn result_to_float(
-            (((sign, digits), _point), digits2): (((Option<char>, Vec<char>), char), Vec<char>),
-        ) -> f64 {
+        fn result_to_float((((sign, digits), _point), digits2): (ParsedFloat, Vec<char>)) -> f64 {
             let i = format!(
                 "{}.{}",
                 String::from_iter(digits),
