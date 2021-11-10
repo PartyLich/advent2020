@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 use std::ops::Add;
 use std::str::FromStr;
 
-use parser::three::three::{choice, one_or_more, p_char};
+use parser::three::lib::{choice, one_or_more, p_char};
 
 use crate::day_1::read_file;
 
