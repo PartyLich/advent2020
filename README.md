@@ -15,3 +15,10 @@ Notes:
   completely unreadable to me. I couldn't write the tests I wanted and spent a number of extra
   minutes scratching my head because one specific unit test was failing, all the while not noticing
   that my test of the overall solution was already passing.
+- Day 20 pt 2: Doesn't seem hard in any sense, but for some reason I struggled to get my solution
+  working. I didn't end up altering my overall approach, but I needed a 3rd party to find which
+  component was malfunctioning. Feels bad man.
+- Day 23 pt 2: The difference between an index focused (ie terrible) approach and a label/link
+  focused approach is incredibly huge. Release build optimizations are also nearly an order of
+  magnitude difference in execution time, but that has little to do with my code; just an
+  interesting sidenote.
