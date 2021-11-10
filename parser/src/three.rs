@@ -204,6 +204,7 @@ where
     }
 }
 
+#[allow(clippy::module_inception)]
 pub mod three {
     //! [3-3. Adding position and context to error messages](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators-3/#3-adding-position-and-context-to-error-messages)
     use std::fmt;
@@ -308,6 +309,7 @@ pub mod three {
         }
     }
 
+    #[allow(dead_code)]
     fn read_all_chars(input: InputState<'_>) -> Vec<char> {
         let mut result = vec![];
         let (remaining_input, char_opt) = next_char(input);
@@ -692,7 +694,7 @@ pub mod three {
     }
 
     /// parse an integer (with sign support)
-    fn p_int<'a>(base: u32) -> Parser<'a, isize> {
+    pub fn p_int<'a>(base: u32) -> Parser<'a, isize> {
         // helper
         fn result_to_int((sign, digits): (Option<char>, Vec<char>)) -> isize {
             let i = String::from_iter(digits)
@@ -717,10 +719,10 @@ pub mod three {
     }
 
     // parse a float
-    fn p_float<'a>(base: u32) -> Parser<'a, f64> {
+    pub fn p_float<'a>(base: u32) -> Parser<'a, f64> {
         // helper
         fn result_to_float(
-            (((sign, digits), point), digits2): (((Option<char>, Vec<char>), char), Vec<char>),
+            (((sign, digits), _point), digits2): (((Option<char>, Vec<char>), char), Vec<char>),
         ) -> f64 {
             let i = format!(
                 "{}.{}",

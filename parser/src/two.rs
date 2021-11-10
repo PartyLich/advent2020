@@ -240,7 +240,7 @@ pub fn optional<'a, T: 'a + Clone>(parser: Parser<'a, T>) -> Parser<'a, Option<T
 }
 
 /// parse an integer (with sign support)
-fn parse_int2<'a>() -> Parser<'a, isize> {
+pub fn parse_int2<'a>() -> Parser<'a, isize> {
     // helper
     fn result_to_int((sign, digits): (Option<char>, Vec<char>)) -> isize {
         let i = digits

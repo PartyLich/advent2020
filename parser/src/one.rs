@@ -6,7 +6,7 @@
 // Parsing a specified character
 // fn p_char(char_to_match: char, input: &str) -> Result<(&str, char), String> {
 // Switching to a curried implementation
-fn p_char(char_to_match: char) -> impl Fn(&str) -> Result<(&str, char), String> {
+pub fn p_char(char_to_match: char) -> impl Fn(&str) -> Result<(&str, char), String> {
     move |input| {
         let first = input
             .chars()
@@ -23,9 +23,9 @@ fn p_char(char_to_match: char) -> impl Fn(&str) -> Result<(&str, char), String> 
 // Encapsulating the parsing function in a type
 type ParseFn<'a, T> = dyn Fn(&'a str) -> Result<(&'a str, T), String> + 'a;
 
-struct Parser<'a, T>(Box<ParseFn<'a, T>>);
+pub struct Parser<'a, T>(Box<ParseFn<'a, T>>);
 
-fn p_char2<'a>(char_to_match: char) -> Parser<'a, char> {
+pub fn p_char2<'a>(char_to_match: char) -> Parser<'a, char> {
     Parser(Box::new(move |input: &str| {
         let first = input
             .chars()
@@ -42,7 +42,7 @@ fn p_char2<'a>(char_to_match: char) -> Parser<'a, char> {
 // Combining two parsers in sequence
 
 /// Combine two parsers as "A andThen B"
-fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, (T, U)> {
+pub fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a, (T, U)> {
     Parser(Box::new(move |input: &str| {
         let (remaining, result1) = p1.0(input)?;
         let (remaining, result2) = p2.0(remaining)?;
@@ -54,7 +54,7 @@ fn and_then<'a, T: 'a, U: 'a>(p1: Parser<'a, T>, p2: Parser<'a, U>) -> Parser<'a
 // Choosing between two parsers
 
 /// Combine two parsers as "A orElse B"
-fn or_else<'a, T: 'a>(p1: Parser<'a, T>, p2: Parser<'a, T>) -> Parser<'a, T> {
+pub fn or_else<'a, T: 'a>(p1: Parser<'a, T>, p2: Parser<'a, T>) -> Parser<'a, T> {
     Parser(Box::new(move |input: &str| {
         p1.0(input).or_else(|_| p2.0(input))
     }))
@@ -63,21 +63,21 @@ fn or_else<'a, T: 'a>(p1: Parser<'a, T>, p2: Parser<'a, T>) -> Parser<'a, T> {
 // Choosing from a list of parsers
 
 /// Choose any of a list of parsers
-fn choice<'a, T: 'a>(parsers: impl IntoIterator<Item = Parser<'a, T>>) -> Parser<'a, T> {
+pub fn choice<'a, T: 'a>(parsers: impl IntoIterator<Item = Parser<'a, T>>) -> Parser<'a, T> {
     parsers.into_iter().reduce(or_else).unwrap()
 }
 
 /// Choose any of a list of characters
-fn any_of<'a>(char_list: impl IntoIterator<Item = char>) -> Parser<'a, char> {
+pub fn any_of<'a>(char_list: impl IntoIterator<Item = char>) -> Parser<'a, char> {
     let parsers = char_list.into_iter().map(p_char2).collect::<Vec<_>>();
     choice(parsers)
 }
 
-fn parse_lowercase<'a>() -> Parser<'a, char> {
+pub fn parse_lowercase<'a>() -> Parser<'a, char> {
     any_of('a'..='z')
 }
 
-fn parse_digit<'a>() -> Parser<'a, char> {
+pub fn parse_digit<'a>() -> Parser<'a, char> {
     any_of('0'..='9')
 }
 
