@@ -3,8 +3,8 @@
 ### Organization
 
 Project contains multiple packages in a cargo workspace.
-- The [`advent_2020`](/tree/main/advent_2020) package contains Advent of Code problem solutions
-- The [`parser`](/tree/main/parser) package contains a simple parser combinator library that seemed
+- The [`advent_2020`](/advent_2020) package contains Advent of Code problem solutions
+- The [`parser`](/parser) package contains a simple parser combinator library that seemed
   rather relevant. It's a port of the F# example found on [fsharpforfunandprofit.com](https://fsharpforfunandprofit.com/series/understanding-parser-combinators/).
   For any serious work you should probably consult one of the parser combinator crates on crates.io.
 
